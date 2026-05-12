@@ -156,16 +156,16 @@ flowchart TB
     CASSANDRA -- Zone history --> ANALYTICS
     GOLD -- Spark batch jobs --> ANALYTICS
 
-    classDef storage fill:#eeedfe,stroke:#534ab7,stroke-width:2px
-    classDef process fill:#fcebeb,stroke:#a32d2d,stroke-width:2px
-    classDef stream fill:#faeeda,stroke:#854f0b,stroke-width:2px
-    classDef source fill:#e1f5ee,stroke:#0f6e56,stroke-width:2px
+    classDef storage fill:#eeedfe,stroke:#534ab7,stroke-width:2px,color:#000
+    classDef process fill:#fcebeb,stroke:#a32d2d,stroke-width:2px,color:#000
+    classDef stream fill:#faeeda,stroke:#854f0b,stroke-width:2px,color:#000
+    classDef source fill:#e1f5ee,stroke:#0f6e56,stroke-width:2px,color:#000
 
-    style IOT fill:#e1f5ee,stroke:#0f6e56
-    style INGESTION fill:#faeeda,stroke:#854f0b
-    style PROCESSING fill:#fcebeb,stroke:#a32d2d
-    style ALERTBUS fill:#faeeda,stroke:#854f0b
-    style STORAGE fill:#eeedfe,stroke:#534ab7
-    style SERVICES fill:#e1f5ee,stroke:#0f6e56
-    style LEGEND fill:#f5f5f5,stroke:#333,stroke-dasharray: 5 5
+    style IOT fill:#e1f5ee,stroke:#0f6e56,color:#000
+    style INGESTION fill:#faeeda,stroke:#854f0b,color:#000
+    style PROCESSING fill:#fcebeb,stroke:#a32d2d,color:#000
+    style ALERTBUS fill:#faeeda,stroke:#854f0b,color:#000
+    style STORAGE fill:#eeedfe,stroke:#534ab7,color:#000
+    style SERVICES fill:#e1f5ee,stroke:#0f6e56,color:#000
+    style LEGEND fill:#f5f5f5,stroke:#333,stroke-dasharray: 5 5,color:#000
 ```
