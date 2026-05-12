@@ -23,7 +23,7 @@ To handle long-term analytics on ~200 GB/day (~73 TB/year), the storage layer mu
 
 **Horizontal scalability (volume).** Vertical scaling (buying a single more powerful server) hits both cost and physical limits at this scale. The storage layer must scale by adding commodity nodes to the cluster without service interruption, absorbing years of historical data linearly.
 
-**High write throughput (velocity).** With ~10M devices emitting continuously, the storage layer must sustain a write rate of roughly 170k events/second without creating a bottleneck upstream of the ingestion pipeline.
+**High write throughput (velocity).** With ~10M devices emitting every 30 seconds, the storage layer must sustain a write rate of roughly 333k events/second without creating a bottleneck upstream of the ingestion pipeline.
 
 **Analytical query capability (OLAP).** Unlike OLTP systems optimized for short transactions, the analytics workload requires efficient scans, aggregations, and joins over large historical windows (e.g. *"average temperature per geographic zone over the last 3 years"*). This favors columnar formats and distributed query engines.
 
@@ -83,7 +83,7 @@ flowchart TB
     direction LR
         GEN["Forest sensors
         temperature · humidity · CO2 · smoke
-        ~10M devices · emission /min
+        ~10M devices · emission /30s
         ~200 GB/day
         LoRaWAN Network Server"]:::source
  end
