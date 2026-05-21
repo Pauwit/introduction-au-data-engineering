@@ -3,7 +3,7 @@ flowchart TB
     direction LR
         GEN["Forest sensors
         temperature · humidity · CO2 · smoke
-        ~10M devices · emission /min
+        ~10M devices · emission /30s
         ~200 GB/day
         LoRaWAN Network Server"]:::source
  end
@@ -22,16 +22,10 @@ flowchart TB
         C2K("Consumer 2: Kafka Connect - HDFS Sink
         Bronze write"):::process
   end
- subgraph ALERTBUS["Alert Bus"]
-        KAFKA_ALERT{{"Apache Kafka
-        Topic"}}:::stream
-  end
  subgraph STORAGE["Distributed Storage Layer"]
     direction TB
-        REDIS[("Redis Cluster
-        Current state cache")]:::storage
-        CASSANDRA[("Apache Cassandra
-        Geo-temporal queries")]:::storage
+        KAFKA_ALERT{{"Apache Kafka
+        Alert Bus · Topic"}}:::stream
         BRONZE[("Data Lake Bronze - HDFS
         Raw events
         Partitioned by date/hour")]:::storage
@@ -43,7 +37,8 @@ flowchart TB
         KPIs")]:::storage
         PG[("PostgreSQL
         Sensor metadata
-        Users · alert log")]:::storage
+        Users · alert log
+        Hourly aggregates &lt;24h")]:::storage
         BRONZE -- Spark Batch --> SILVER
         SILVER -- Spark Batch --> GOLD
   end
@@ -64,17 +59,16 @@ flowchart TB
   end
     GEN -- LoRaWAN --> GW
     GW -- Normalized data --> KAFKA
+    GW -- Device registration --> PG
     KAFKA -- Real-time flow --> C1K
     KAFKA -- Sink connector --> C2K
-    C1K -- Current state --> REDIS
-    C1K -- Hot write --> CASSANDRA
+    C1K -- Hourly aggregates --> PG
     C1K -- Anomaly detected --> KAFKA_ALERT
     C2K -- Cold storage --> BRONZE
     KAFKA_ALERT -- Consume --> ALERT
-    REDIS -- Lookup --> ALERT
     PG -- Sensor metadata --> ALERT
-    CASSANDRA -- Zone history --> ANALYTICS
     GOLD -- Spark batch jobs --> ANALYTICS
+    PG -- Recent data &lt;24h --> ANALYTICS
 
     classDef storage fill:#eeedfe,stroke:#534ab7,stroke-width:2px,color:#000
     classDef process fill:#fcebeb,stroke:#a32d2d,stroke-width:2px,color:#000
@@ -84,7 +78,6 @@ flowchart TB
     style IOT fill:#e1f5ee,stroke:#0f6e56,color:#000
     style INGESTION fill:#faeeda,stroke:#854f0b,color:#000
     style PROCESSING fill:#fcebeb,stroke:#a32d2d,color:#000
-    style ALERTBUS fill:#faeeda,stroke:#854f0b,color:#000
     style STORAGE fill:#eeedfe,stroke:#534ab7,color:#000
     style SERVICES fill:#e1f5ee,stroke:#0f6e56,color:#000
     style LEGEND fill:#f5f5f5,stroke:#333,stroke-dasharray: 5 5,color:#000
