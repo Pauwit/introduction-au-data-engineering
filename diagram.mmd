@@ -37,13 +37,15 @@ flowchart TB
         KPIs")]:::storage
         PG[("PostgreSQL
         Sensor metadata
-        Users · alert log
-        Hourly aggregates &lt;24h")]:::storage
+        Users · alert log")]:::storage
         BRONZE -- Spark Batch --> SILVER
         SILVER -- Spark Batch --> GOLD
   end
  subgraph SERVICES["End Services Layer"]
     direction LR
+        PROV("Device Management API
+        Akka HTTP / Play - Scala
+        Provisioning"):::process
         ALERT("Alert Service
         Akka HTTP - Scala
         WebSocket · Push · SMS"):::process
@@ -57,18 +59,28 @@ flowchart TB
         L_P("Processing"):::process
         L_ST{{"Stream"}}:::stream
   end
+    
+    %% Flux IoT
     GEN -- LoRaWAN --> GW
     GW -- Normalized data --> KAFKA
-    GW -- Device registration --> PG
+    
+    %% Flux Provisioning (Nouveau composant)
+    PROV -- Register device --> PG
+    
+    %% Flux Processing
     KAFKA -- Real-time flow --> C1K
     KAFKA -- Sink connector --> C2K
-    C1K -- Hourly aggregates --> PG
     C1K -- Anomaly detected --> KAFKA_ALERT
     C2K -- Cold storage --> BRONZE
+    
+    %% Flux Services & DB
     KAFKA_ALERT -- Consume --> ALERT
     PG -- Sensor metadata --> ALERT
+    ALERT -- Acknowledgment logs --> PG
+    
+    %% Flux Analytics (Découplé de PG)
     GOLD -- Spark batch jobs --> ANALYTICS
-    PG -- Recent data &lt;24h --> ANALYTICS
+    SILVER -- Recent data --> ANALYTICS
 
     classDef storage fill:#eeedfe,stroke:#534ab7,stroke-width:2px,color:#000
     classDef process fill:#fcebeb,stroke:#a32d2d,stroke-width:2px,color:#000

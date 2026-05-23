@@ -40,7 +40,11 @@ Stores raw and processed data in a cost-effective, durable, massively scalable w
 - **Gold** : pre-aggregated, use-case-specific views ready for dashboards and reporting.
 
 **2. A relational database for metadata and recent data - PostgreSQL.**
-A small but critical fraction of the data (sensor registry, user accounts, alert acknowledgment logs) requires strong ACID guarantees (atomicity, consistency, isolation, durability). The volume is low (thousands of rows), so PostgreSQL's lack of horizontal scalability is not a limitation here. It complements the BASE-oriented storage above by providing referential integrity and transactional safety for operational metadata. The IoT Gateway writes device registrations (device_id, latitude, longitude, owner, contact) into PostgreSQL at provisioning time; the Alert Service writes alert acknowledgment logs. For sub-day queries (e.g. *"history of zone X over the last 24 hours"*), Spark writes hourly aggregates into PostgreSQL, keeping the volume manageable.
+A small but critical fraction of the data (sensor registry, user accounts, alert acknowledgment logs) requires strong ACID guarantees (atomicity, consistency, isolation, durability). The volume is low (thousands of rows), so PostgreSQL's lack of horizontal scalability is not a limitation here. It complements the BASE-oriented storage above by providing referential integrity and transactional safety for operational metadata.
+
+To strictly separate concerns and avoid throttling the high-velocity ingestion layer, device provisioning is handled by a dedicated Device Management API, completely decoupled from the IoT Gateway. This API writes device registrations (device_id, latitude, longitude, owner, contact) into PostgreSQL.
+
+During an incident, the Alert Service queries PostgreSQL to enrich the real-time anomalies with the correct contact metadata, and writes back acknowledgment logs. Finally, to maintain a pure separation between operational and analytical workloads, the Analytics Dashboard does not rely on PostgreSQL; all short-term and long-term analytical queries are routed directly to the HDFS Data Lake (Silver/Gold layers) via Spark SQL.
 
 ### 2.a - Constraints for the alert service
 
@@ -73,7 +77,7 @@ The system is organized in five layers: IoT simulation, ingestion, stream proces
 
 ```mermaid
 flowchart TB
- subgraph IOT["IoT Layer - Scala/Akka Simulation"]
+ subgraph IOT["IoT Layer — Scala/Akka Simulation"]
     direction LR
         GEN["Forest sensors
         temperature · humidity · CO2 · smoke
@@ -111,13 +115,15 @@ flowchart TB
         KPIs")]:::storage
         PG[("PostgreSQL
         Sensor metadata
-        Users · alert log
-        Hourly aggregates &lt;24h")]:::storage
+        Users · alert log")]:::storage
         BRONZE -- Spark Batch --> SILVER
         SILVER -- Spark Batch --> GOLD
   end
  subgraph SERVICES["End Services Layer"]
     direction LR
+        PROV("Device Management API
+        Akka HTTP / Play - Scala
+        Provisioning"):::process
         ALERT("Alert Service
         Akka HTTP - Scala
         WebSocket · Push · SMS"):::process
@@ -131,18 +137,28 @@ flowchart TB
         L_P("Processing"):::process
         L_ST{{"Stream"}}:::stream
   end
+    
+    %% Flux IoT
     GEN -- LoRaWAN --> GW
     GW -- Normalized data --> KAFKA
-    GW -- Device registration --> PG
+    
+    %% Flux Provisioning (Nouveau composant)
+    PROV -- Register device --> PG
+    
+    %% Flux Processing
     KAFKA -- Real-time flow --> C1K
     KAFKA -- Sink connector --> C2K
-    C1K -- Hourly aggregates --> PG
     C1K -- Anomaly detected --> KAFKA_ALERT
     C2K -- Cold storage --> BRONZE
+    
+    %% Flux Services & DB
     KAFKA_ALERT -- Consume --> ALERT
     PG -- Sensor metadata --> ALERT
+    ALERT -- Acknowledgment logs --> PG
+    
+    %% Flux Analytics (Découplé de PG)
     GOLD -- Spark batch jobs --> ANALYTICS
-    PG -- Recent data &lt;24h --> ANALYTICS
+    SILVER -- Recent data --> ANALYTICS
 
     classDef storage fill:#eeedfe,stroke:#534ab7,stroke-width:2px,color:#000
     classDef process fill:#fcebeb,stroke:#a32d2d,stroke-width:2px,color:#000
