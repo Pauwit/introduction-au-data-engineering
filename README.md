@@ -94,7 +94,8 @@ flowchart TB
         C1K("Consumer 1: Spark Structured Streaming - Scala
         Anomaly detection
         Sliding windows"):::process
-        C2K("Consumer 2: Kafka Connect - HDFS Sink
+        C2K("Consumer 2: lake-ingestion - Akka Streams
+        Custom kafka consumer, HDFS-equivalent sink
         Bronze write"):::process
   end
  subgraph STORAGE["Distributed Storage Layer"]
