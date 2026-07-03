@@ -5,7 +5,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path}
 import java.util.Comparator
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -48,7 +48,7 @@ class BronzeWriterSpec extends AnyFlatSpec with Matchers with BeforeAndAfterAll 
     val result = Await.result(BronzeWriter.writeBatch(tempRoot.toString, batch), 10.seconds)
     result shouldEqual akka.Done
 
-    val partitionDir = Paths.get(tempRoot.toString, "bronze", "drone-events", "date=2026-07-03", "hour=10")
+    val partitionDir = Path.of(tempRoot.toString, "bronze", "drone-events", "date=2026-07-03", "hour=10")
     Files.exists(partitionDir) shouldEqual true
 
     val writtenFiles = Files.list(partitionDir).iterator().asScala.toList
