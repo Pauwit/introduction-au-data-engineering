@@ -8,7 +8,7 @@ import akka.kafka.ConsumerSettings
 import akka.kafka.Subscriptions
 import akka.kafka.scaladsl.Consumer
 import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.scaladsl.{BroadcastHub, Flow, Keep, Sink, Source}
 import io.circe.parser.decode
 import io.circe.syntax._
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -43,7 +43,8 @@ object Main {
 
     val (queue, broadcastSource) = Source
       .queue[EnrichedAlert](256, OverflowStrategy.dropHead)
-      .preMaterialize()
+      .toMat(BroadcastHub.sink[EnrichedAlert](bufferSize = 256))(Keep.both)
+      .run()
 
     val dispatchers = List(ConsoleNotificationDispatcher, new WebSocketNotificationDispatcher(queue))
 
