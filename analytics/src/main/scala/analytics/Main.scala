@@ -10,6 +10,7 @@ object Main {
     val spark = SparkSession.builder()
       .appName("analytics")
       .master(AnalyticsConfig.sparkMaster(env))
+      .config("spark.sql.session.timeZone", "UTC")
       .getOrCreate()
 
     val bronze = BronzeEventParser.read(spark, AnalyticsConfig.bronzePath(env))
