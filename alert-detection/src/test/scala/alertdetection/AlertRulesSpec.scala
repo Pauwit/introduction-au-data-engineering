@@ -41,4 +41,14 @@ class AlertRulesSpec extends AnyFlatSpec with Matchers with SparkSessionTestWrap
     alerts.map(_.getAs[String]("device_id")).toSet shouldEqual Set("drone-003", "drone-004")
     alerts should have length 2
   }
+
+  it should "not raise an alert when only temperature is high but smoke stays calm" in {
+    val events = Seq(
+      (Timestamp.valueOf("2026-07-03 10:15:00"), "drone-005", 43.0, 5.0, 60.0, 20.0, 500.0, 10.0)
+    ).toDF("timestamp", "device_id", "latitude", "longitude", "temperature", "humidity", "co2", "smoke")
+
+    val alerts = AlertRules.detect(events).collect()
+
+    alerts should have length 0
+  }
 }
