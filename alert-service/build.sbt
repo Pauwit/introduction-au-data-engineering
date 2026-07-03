@@ -15,5 +15,6 @@ lazy val root = (project in file("."))
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
       "com.typesafe.akka" %% "akka-stream-testkit" % "2.6.20" % Test,
       "com.typesafe.akka" %% "akka-testkit" % "2.6.20" % Test
-    )
+    ),
+    run / fork := true
   )

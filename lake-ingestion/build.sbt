@@ -13,5 +13,6 @@ lazy val root = (project in file("."))
       "org.slf4j" % "slf4j-simple" % "2.0.13",
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
       "com.typesafe.akka" %% "akka-stream-testkit" % "2.6.20" % Test
-    )
+    ),
+    run / fork := true
   )
