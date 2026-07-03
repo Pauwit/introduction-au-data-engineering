@@ -29,4 +29,16 @@ class AlertRulesSpec extends AnyFlatSpec with Matchers with SparkSessionTestWrap
 
     alerts should have length 0
   }
+
+  it should "raise independent alerts for two different devices burning in the same time window" in {
+    val events = Seq(
+      (Timestamp.valueOf("2026-07-03 10:15:00"), "drone-003", 43.5, 5.2, 75.0, 10.0, 1100.0, 80.0),
+      (Timestamp.valueOf("2026-07-03 10:15:10"), "drone-004", 44.0, 6.0, 65.0, 12.0, 1000.0, 60.0)
+    ).toDF("timestamp", "device_id", "latitude", "longitude", "temperature", "humidity", "co2", "smoke")
+
+    val alerts = AlertRules.detect(events).collect()
+
+    alerts.map(_.getAs[String]("device_id")).toSet shouldEqual Set("drone-003", "drone-004")
+    alerts should have length 2
+  }
 }

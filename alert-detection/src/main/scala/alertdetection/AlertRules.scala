@@ -11,11 +11,10 @@ object AlertRules {
   def detect(events: DataFrame): DataFrame =
     events
       .withWatermark("timestamp", "1 minute")
-      .groupBy(window(col("timestamp"), "1 minute", "30 seconds"))
+      .groupBy(col("device_id"), window(col("timestamp"), "1 minute", "30 seconds"))
       .agg(
         max("temperature").as("max_temperature"),
         max("smoke").as("max_smoke"),
-        first("device_id").as("device_id"),
         first("latitude").as("latitude"),
         first("longitude").as("longitude"),
         max("timestamp").as("timestamp")
