@@ -1,7 +1,64 @@
 package alertservice
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.ws.TextMessage
+import akka.http.scaladsl.server.Directives._
+import akka.kafka.ConsumerSettings
+import akka.kafka.Subscriptions
+import akka.kafka.scaladsl.Consumer
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.{Flow, Sink, Source}
+import io.circe.parser.decode
+import io.circe.syntax._
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.common.serialization.StringDeserializer
+
+import scala.concurrent.duration._
+
 object Main {
+
   def main(args: Array[String]): Unit = {
-    println("alert-service starting")
+    val env = sys.env
+
+    implicit val system: ActorSystem = ActorSystem("alert-service")
+
+    val consumerSettings = ConsumerSettings(system, new StringDeserializer, new StringDeserializer)
+      .withBootstrapServers(AlertServiceConfig.bootstrapServers(env))
+      .withGroupId("alert-service")
+      .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest")
+
+    val alerts = Consumer
+      .plainSource(consumerSettings, Subscriptions.topics(AlertServiceConfig.alertsTopic(env)))
+      .map(record => decode[Alert](record.value()))
+      .collect { case Right(alert) => alert }
+
+    val contactsTicks = Source
+      .tick(0.seconds, AlertServiceConfig.contactsRefreshInterval(env), ())
+      .map(_ => ContactsRepository.load(AlertServiceConfig.contactsResource(env)))
+
+    val precision = AlertServiceConfig.geohashPrecision(env)
+
+    val enrichedAlerts = alerts.zipLatestWith(contactsTicks)((alert, contacts) => AlertEnricher.enrich(alert, contacts, precision))
+
+    val (queue, broadcastSource) = Source
+      .queue[EnrichedAlert](256, OverflowStrategy.dropHead)
+      .preMaterialize()
+
+    val dispatchers = List(ConsoleNotificationDispatcher, new WebSocketNotificationDispatcher(queue))
+
+    val _ = enrichedAlerts.runForeach(alert => dispatchers.foreach(_.dispatch(alert)))
+
+    val alertsRoute = path("alerts") {
+      handleWebSocketMessages(Flow.fromSinkAndSource(Sink.ignore, broadcastSource.map(alert => TextMessage(alert.asJson.noSpaces))))
+    }
+
+    val healthRoute = path("health") {
+      get {
+        complete("ok")
+      }
+    }
+
+    val _ = Http().newServerAt(AlertServiceConfig.httpHost(env), AlertServiceConfig.httpPort(env)).bind(alertsRoute ~ healthRoute)
   }
 }
