@@ -1,0 +1,2 @@
+{"timestamp":"2026-07-03T10:15:30Z","device_id":"drone-001","latitude":43.5,"longitude":5.2,"temperature":21.4,"humidity":40.0,"co2":410.0,"smoke":1.2}
+{"timestamp":"2026-07-04T11:20:00Z","device_id":"drone-002","latitude":44.0,"longitude":6.0,"temperature":55.0,"humidity":12.0,"co2":900.0,"smoke":60.0}
