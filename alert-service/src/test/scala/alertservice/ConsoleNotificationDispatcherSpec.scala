@@ -1,0 +1,23 @@
+package alertservice
+
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
+import java.time.Instant
+
+class ConsoleNotificationDispatcherSpec extends AnyFlatSpec with Matchers {
+
+  "format" should "include the device, reason, owner and contact" in {
+    val alert = EnrichedAlert(
+      Instant.parse("2026-07-03T10:15:00Z"), "drone-001", 43.5, 5.2, "high temperature and smoke",
+      "Office National des Forets - Vosges", "+33 3 88 00 11 22"
+    )
+
+    val line = ConsoleNotificationDispatcher.format(alert)
+
+    line should include("drone-001")
+    line should include("high temperature and smoke")
+    line should include("Office National des Forets - Vosges")
+    line should include("+33 3 88 00 11 22")
+  }
+}
