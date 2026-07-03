@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.ByteString
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path}
 import java.util.UUID
 import scala.concurrent.Future
 
@@ -18,10 +18,10 @@ object BronzeWriter {
       .map { case (path, entries) => path -> entries.map { case (_, rawJson) => rawJson } }
 
   def writePartition(partitionPath: String, records: Seq[String])(implicit system: ActorSystem): Future[Done] = {
-    Files.createDirectories(Paths.get(partitionPath))
+    Files.createDirectories(Path.of(partitionPath))
     val fileName = s"part-${System.currentTimeMillis()}-${UUID.randomUUID()}.json"
     val content = ByteString(records.mkString("", "\n", "\n"))
-    Source.single(content).runWith(FileIO.toPath(Paths.get(partitionPath, fileName))).map(_ => Done)(system.dispatcher)
+    Source.single(content).runWith(FileIO.toPath(Path.of(partitionPath, fileName))).map(_ => Done)(system.dispatcher)
   }
 
   def writeBatch(root: String, batch: Seq[String])(implicit system: ActorSystem): Future[Done] = {
