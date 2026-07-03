@@ -13,6 +13,7 @@ lazy val root = (project in file("."))
       "io.circe" %% "circe-parser" % "0.14.9",
       "org.slf4j" % "slf4j-simple" % "2.0.13",
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
-      "com.typesafe.akka" %% "akka-stream-testkit" % "2.6.20" % Test
+      "com.typesafe.akka" %% "akka-stream-testkit" % "2.6.20" % Test,
+      "com.typesafe.akka" %% "akka-testkit" % "2.6.20" % Test
     )
   )
