@@ -7,6 +7,5 @@ trait SparkSessionTestWrapper {
     .master("local[2]")
     .appName("analytics-test")
     .config("spark.sql.shuffle.partitions", "2")
-    .config("spark.sql.legacy.timeParserPolicy", "LEGACY")
     .getOrCreate()
 }

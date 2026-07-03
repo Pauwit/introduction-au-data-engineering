@@ -1,7 +1,7 @@
 package analytics
 
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{avg, col, count, date_format, when}
+import org.apache.spark.sql.functions.{avg, col, count, dayofweek, when}
 
 object GoldAnalytics {
 
@@ -11,7 +11,7 @@ object GoldAnalytics {
   def anomaliesByWeekday(silver: DataFrame): DataFrame =
     silver
       .filter(col("temperature") > temperatureThreshold && col("smoke") > smokeThreshold)
-      .withColumn("day_type", when(date_format(col("timestamp"), "u").isin("6", "7"), "weekend").otherwise("weekday"))
+      .withColumn("day_type", when(dayofweek(col("timestamp")).isin(1, 7), "weekend").otherwise("weekday"))
       .groupBy(col("day_type"))
       .agg(count("*").as("anomaly_count"))
 
