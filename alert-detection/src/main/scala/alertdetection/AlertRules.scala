@@ -8,10 +8,12 @@ object AlertRules {
   private val temperatureThreshold = 50.0
   private val smokeThreshold = 50.0
 
-  def detect(events: DataFrame): DataFrame =
+  def detect(events: DataFrame, windowDurationSeconds: Int): DataFrame = {
+    val windowDuration = s"$windowDurationSeconds seconds"
+
     events
-      .withWatermark("timestamp", "1 minute")
-      .groupBy(col("device_id"), window(col("timestamp"), "1 minute"))
+      .withWatermark("timestamp", windowDuration)
+      .groupBy(col("device_id"), window(col("timestamp"), windowDuration))
       .agg(
         max("temperature").as("max_temperature"),
         max("smoke").as("max_smoke"),
@@ -27,4 +29,5 @@ object AlertRules {
         col("longitude"),
         lit("high temperature and smoke").as("reason")
       )
+  }
 }

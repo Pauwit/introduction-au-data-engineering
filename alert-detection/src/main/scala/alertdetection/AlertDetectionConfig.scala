@@ -1,5 +1,7 @@
 package alertdetection
 
+import scala.util.Try
+
 object AlertDetectionConfig {
 
   def bootstrapServers(env: Map[String, String]): String =
@@ -16,4 +18,7 @@ object AlertDetectionConfig {
 
   def sparkMaster(env: Map[String, String]): String =
     env.getOrElse("SPARK_MASTER", "local[*]")
+
+  def windowDurationSeconds(env: Map[String, String]): Int =
+    Try(env.getOrElse("WINDOW_DURATION_SECONDS", "60").toInt).toOption.filter(_ > 0).getOrElse(60)
 }

@@ -21,7 +21,7 @@ object Main {
       .load()
 
     val events = DroneEventParser.parse(rawEvents)
-    val alerts = AlertRules.detect(events)
+    val alerts = AlertRules.detect(events, AlertDetectionConfig.windowDurationSeconds(env))
 
     val alertRecords = alerts.select(
       to_json(struct(col("timestamp"), col("device_id"), col("latitude"), col("longitude"), col("reason"))).as("value")

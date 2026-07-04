@@ -38,9 +38,9 @@ sbt run
 
 `run` is forked in every `build.sbt`, so this stays running as a real service instead of exiting immediately. Press `Ctrl+C` to stop it.
 
-### `iot-simulator` (component 1)
+### Component 1: `iot-simulator`
 
-Publishes simulated drone readings to `drone-events`.
+Publishes simulated drone readings to `DRONE_EVENTS_TOPIC`.
 
 ```bash
 cd iot-simulator
@@ -54,9 +54,9 @@ DEVICE_COUNT=30 TICK_INTERVAL_SECONDS=2 sbt run
 | `DEVICE_COUNT` | `5` |
 | `TICK_INTERVAL_SECONDS` | `30` |
 
-### `alert-detection` (component 2)
+### Component 2: `alert-detection`
 
-Spark Structured Streaming job: reads `drone-events`, detects anomalies within a 1-minute tumbling window, writes to `alerts`.
+Spark Structured Streaming job: reads `DRONE_EVENTS_TOPIC`, detects anomalies within a tumbling window, writes to `ALERTS_TOPIC`.
 
 ```bash
 cd alert-detection
@@ -70,10 +70,11 @@ sbt run
 | `ALERTS_TOPIC` | `alerts` |
 | `CHECKPOINT_LOCATION` | `checkpoints/alert-detection` |
 | `SPARK_MASTER` | `local[*]` |
+| `WINDOW_DURATION_SECONDS` | `60` |
 
-Because of the 1-minute window plus a 1-minute watermark, expect roughly 2 minutes of data flowing through `DRONE_EVENTS_TOPIC` before the first alerts appear on the `ALERTS_TOPIC`.
+The watermark matches the window duration. Because of that, expect roughly two window durations of data flowing through `DRONE_EVENTS_TOPIC` before the first alerts appear on the `ALERTS_TOPIC`; lowering `WINDOW_DURATION_SECONDS` shortens that wait.
 
-### `alert-service` (component 3)
+### Component 3: `alert-service`
 
 Consumes `ALERTS_TOPIC`, enriches with owner/contact from the seeded contacts table, dispatches to console and to a WebSocket at `/alerts`; exposes `/health`.
 
@@ -94,9 +95,9 @@ sbt run
 
 Check it's up with `curl http://localhost:8080/health` (expects `ok`).
 
-### `lake-ingestion` (component 4)
+### Component 4: `lake-ingestion`
 
-Consumes `drone-events`, writes raw JSON to the bronze layer of a local data lake, partitioned by date/hour.
+Consumes `DRONE_EVENTS_TOPIC`, writes raw JSON to the bronze layer of a local data lake, partitioned by date/hour.
 
 ```bash
 cd lake-ingestion
@@ -113,7 +114,7 @@ DATA_LAKE_ROOT=/absolute/path/to/data-lake sbt run
 
 `DATA_LAKE_ROOT` must be the same absolute path used for `analytics` below, since one writes the data lake and the other reads it.
 
-### `analytics` (component 5)
+### Component 5: `analytics`
 
 One-shot Spark batch job: reads the bronze layer, writes a cleaned/deduped silver layer, computes 4 gold aggregations, and prints a summary. Run this after `lake-ingestion` has had time to write some data.
 
