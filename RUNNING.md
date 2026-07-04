@@ -47,7 +47,12 @@ cd iot-simulator
 DEVICE_COUNT=30 TICK_INTERVAL_SECONDS=2 sbt run
 ```
 
-Env vars: `KAFKA_BOOTSTRAP_SERVERS` (default `localhost:9092`), `DRONE_EVENTS_TOPIC` (default `drone-events`), `DEVICE_COUNT` (default `5`), `TICK_INTERVAL_SECONDS` (default `30`).
+| Env var | Default |
+|---|---|
+| `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` |
+| `DRONE_EVENTS_TOPIC` | `drone-events` |
+| `DEVICE_COUNT` | `5` |
+| `TICK_INTERVAL_SECONDS` | `30` |
 
 ### `alert-detection` (component 2)
 
@@ -58,7 +63,13 @@ cd alert-detection
 sbt run
 ```
 
-Env vars: `KAFKA_BOOTSTRAP_SERVERS` (default `localhost:9092`), `DRONE_EVENTS_TOPIC` (default `drone-events`), `ALERTS_TOPIC` (default `alerts`), `CHECKPOINT_LOCATION` (default `checkpoints/alert-detection`), `SPARK_MASTER` (default `local[*]`).
+| Env var | Default |
+|---|---|
+| `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` |
+| `DRONE_EVENTS_TOPIC` | `drone-events` |
+| `ALERTS_TOPIC` | `alerts` |
+| `CHECKPOINT_LOCATION` | `checkpoints/alert-detection` |
+| `SPARK_MASTER` | `local[*]` |
 
 Because of the 1-minute window plus a 1-minute watermark, expect roughly 2 minutes of data flowing through `DRONE_EVENTS_TOPIC` before the first alerts appear on the `ALERTS_TOPIC`.
 
@@ -71,7 +82,15 @@ cd alert-service
 sbt run
 ```
 
-Env vars: `KAFKA_BOOTSTRAP_SERVERS` (default `localhost:9092`), `ALERTS_TOPIC` (default `alerts`), `HTTP_HOST` (default `0.0.0.0`), `HTTP_PORT` (default `8080`).
+| Env var | Default |
+|---|---|
+| `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` |
+| `ALERTS_TOPIC` | `alerts` |
+| `CONTACTS_RESOURCE` | `contacts-seed.json` |
+| `CONTACTS_REFRESH_SECONDS` | `300` |
+| `GEOHASH_PRECISION` | `5` |
+| `HTTP_HOST` | `0.0.0.0` |
+| `HTTP_PORT` | `8080` |
 
 Check it's up with `curl http://localhost:8080/health` (expects `ok`).
 
@@ -84,7 +103,13 @@ cd lake-ingestion
 DATA_LAKE_ROOT=/absolute/path/to/data-lake sbt run
 ```
 
-Env vars: `KAFKA_BOOTSTRAP_SERVERS` (default `localhost:9092`), `DRONE_EVENTS_TOPIC` (default `drone-events`), `DATA_LAKE_ROOT` (default `data-lake`, relative to the current directory), `BATCH_SIZE` (default `50`), `BATCH_INTERVAL_SECONDS` (default `5`).
+| Env var | Default |
+|---|---|
+| `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` |
+| `DRONE_EVENTS_TOPIC` | `drone-events` |
+| `DATA_LAKE_ROOT` | `data-lake` (relative to the current directory) |
+| `BATCH_SIZE` | `50` |
+| `BATCH_INTERVAL_SECONDS` | `5` |
 
 `DATA_LAKE_ROOT` must be the same absolute path used for `analytics` below, since one writes the data lake and the other reads it.
 
@@ -97,7 +122,10 @@ cd analytics
 DATA_LAKE_ROOT=/absolute/path/to/data-lake sbt run
 ```
 
-Env vars: `DATA_LAKE_ROOT` (default `data-lake`), `SPARK_MASTER` (default `local[*]`).
+| Env var | Default |
+|---|---|
+| `DATA_LAKE_ROOT` | `data-lake` |
+| `SPARK_MASTER` | `local[*]` |
 
 This exits on its own once done (it is not a long-running service).
 
