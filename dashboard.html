@@ -1,588 +1,899 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forest Fire Detection - Live Dashboard</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-fire: #ef4444;
-            --accent-orange: #f97316;
-            --accent-ok: #10b981;
-            --border-color: #334155;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0c0e">
+<title>Vigie Forêt — Surveillance Incendie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --basalt-950: #0a0c0e;
+        --basalt-900: #14181b;
+        --basalt-850: #1b2024;
+        --basalt-800: #232a2f;
+        --basalt-border: rgba(255, 255, 255, 0.08);
+        --basalt-border-strong: rgba(255, 255, 255, 0.14);
+        --smoke-400: #8b939c;
+        --smoke-200: #c7ccd1;
+        --paper: #f0f2f4;
+        --ember-500: #ff6b35;
+        --ember-400: #ff8c5a;
+        --flame-600: #e8380d;
+        --forest-400: #7bb98d;
+        --forest-500: #4a8f5f;
+        --focus-ring: #5ab0ff;
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+        --font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 2rem;
-            min-height: 100vh;
-        }
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+    }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
 
-        h1 {
-            font-size: 1.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+    body {
+        background: var(--basalt-950);
+        color: var(--paper);
+        font-family: var(--font-body);
+        height: 100vh;
+        overflow: hidden;
+    }
 
-        h1 span {
-            color: var(--accent-fire);
-            animation: pulse 1.5s infinite;
-        }
+    :focus { outline: none; }
+    :focus-visible {
+        outline: 2px solid var(--focus-ring);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+    }
 
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            background: #020617;
-            border: 1px solid var(--border-color);
-        }
+    .app {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #64748b;
-        }
+    /* ---------- Topbar ---------- */
+    .topbar {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 0.75rem 1.5rem;
+        border-bottom: 1px solid var(--basalt-border);
+        background: var(--basalt-900);
+        flex-shrink: 0;
+    }
 
-        .status-dot.connected {
-            background-color: var(--accent-ok);
-            box-shadow: 0 0 10px var(--accent-ok);
-        }
+    .brand { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
 
-        .status-dot.disconnected {
-            background-color: var(--accent-fire);
-            box-shadow: 0 0 10px var(--accent-fire);
-        }
+    .brand-mark {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--ember-400), var(--flame-600));
+        transform: rotate(45deg);
+        border-radius: 2px;
+    }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
+    .brand-text h1 {
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+        margin: 0;
+    }
 
-        .stat-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-        }
+    .brand-text p {
+        margin: 0.15rem 0 0;
+        font-size: 0.75rem;
+        color: var(--smoke-400);
+        letter-spacing: 0.01em;
+    }
 
-        .stat-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background-color: var(--border-color);
-        }
+    .telemetry-strip {
+        flex: 1;
+        min-width: 100px;
+        height: 32px;
+    }
 
-        .stat-card.alert-count::after {
-            background-color: var(--accent-fire);
-        }
+    .waveform { width: 100%; height: 100%; overflow: visible; }
 
-        .stat-card.active-devices::after {
-            background-color: var(--accent-orange);
-        }
+    .waveform-base {
+        stroke: var(--smoke-400);
+        stroke-width: 1;
+        opacity: 0.45;
+        stroke-dasharray: 2 4;
+        animation: scan 3s linear infinite;
+    }
 
-        .stat-card.status-ok::after {
-            background-color: var(--accent-ok);
-        }
+    @keyframes scan { to { stroke-dashoffset: -24; } }
 
-        .stat-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
+    .spike {
+        stroke: var(--ember-500);
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        filter: drop-shadow(0 0 3px rgba(255, 107, 53, 0.8));
+        animation: spike-fade 1.2s ease-out forwards;
+    }
 
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-        }
+    @keyframes spike-fade {
+        0% { opacity: 1; }
+        100% { opacity: 0; }
+    }
 
-        .main-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 2rem;
-        }
+    .readouts {
+        display: flex;
+        align-items: baseline;
+        gap: 1.5rem;
+        flex-shrink: 0;
+    }
 
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
+    .readout { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; max-width: 11rem; }
 
-        .btn-clear {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-        }
+    .readout-wide { max-width: 20rem; }
 
-        .btn-clear:hover {
-            color: var(--text-main);
-            background-color: var(--border-color);
-        }
+    .readout-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--smoke-400);
+    }
 
-        .alerts-container {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            max-height: 600px;
-            overflow-y: auto;
-        }
+    .readout-value {
+        font-family: var(--font-mono);
+        font-size: 1.05rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
 
-        .alerts-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+    .status-pill {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        font-family: var(--font-mono);
+        padding: 0.4rem 0.75rem;
+        border-radius: 999px;
+        background: var(--basalt-950);
+        border: 1px solid var(--basalt-border);
+        flex-shrink: 0;
+        color: var(--smoke-200);
+    }
 
-        .alert-item {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            border-left: 5px solid var(--accent-fire);
-            border-radius: 8px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            animation: slideIn 0.3s ease-out;
-            position: relative;
-        }
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--smoke-400);
+    }
 
-        .alert-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .status-dot.connected { background: var(--forest-400); box-shadow: 0 0 8px var(--forest-400); }
+    .status-dot.disconnected { background: var(--flame-600); box-shadow: 0 0 8px var(--flame-600); }
 
-        .alert-device {
-            font-weight: bold;
-            color: var(--accent-orange);
-            font-family: monospace;
-            font-size: 1.1rem;
-        }
+    .live-clock {
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--smoke-200);
+        letter-spacing: 0.02em;
+        flex-shrink: 0;
+    }
 
-        .alert-time {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
+    /* ---------- Main grid ---------- */
+    main.grid {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 1px;
+        background: var(--basalt-border);
+    }
 
-        .alert-reason {
-            font-size: 1rem;
-            line-height: 1.4;
-            color: var(--text-main);
-            background: rgba(239, 68, 68, 0.1);
-            padding: 0.5rem;
-            border-radius: 6px;
-            border: 1px dashed rgba(239, 68, 68, 0.2);
-        }
+    .panel {
+        background: var(--basalt-950);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
 
-        .alert-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-color);
-            padding-top: 0.5rem;
-            margin-top: 0.2rem;
-        }
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem 0.75rem;
+        flex-shrink: 0;
+    }
 
-        .meta-group {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
+    .panel-header h2 {
+        font-family: var(--font-display);
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 
-        .meta-group strong {
-            color: var(--text-main);
-        }
+    .tag {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+        color: var(--smoke-200);
+        border: 1px solid var(--basalt-border-strong);
+        padding: 0.1rem 0.4rem;
+        border-radius: var(--radius-sm);
+    }
 
-        .no-alerts {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-muted);
-            font-style: italic;
-        }
+    .btn-ghost {
+        background: transparent;
+        color: var(--smoke-400);
+        border: 1px solid var(--basalt-border-strong);
+        padding: 0.35rem 0.7rem;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-family: var(--font-body);
+        font-size: 0.78rem;
+        transition: color 0.15s, background 0.15s, border-color 0.15s;
+    }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+    .btn-ghost:hover { color: var(--paper); background: var(--basalt-850); }
 
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+    .btn-accent { color: var(--ember-400); border-color: rgba(255, 107, 53, 0.35); }
+    .btn-accent:hover { color: var(--ember-400); background: rgba(255, 107, 53, 0.08); }
 
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--card-bg);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-    </style>
+    .panel-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 1.25rem 1.25rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--smoke-400);
+        font-size: 0.9rem;
+    }
+
+    /* ---------- Incident log ---------- */
+    .incident-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .incident {
+        background: var(--basalt-900);
+        border: 1px solid var(--basalt-border);
+        border-left: 3px solid var(--ember-500);
+        border-radius: var(--radius-md);
+        padding: 0.85rem 1rem;
+        animation: slide-in 0.25s ease-out;
+    }
+
+    @keyframes slide-in {
+        from { transform: translateY(-6px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .incident-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .incident-id {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--smoke-400);
+    }
+
+    .incident-device {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        color: var(--paper);
+        font-size: 0.95rem;
+    }
+
+    .incident-time {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--smoke-400);
+        white-space: nowrap;
+    }
+
+    .incident-reason {
+        font-size: 0.88rem;
+        line-height: 1.4;
+        color: var(--ember-400);
+        border-left: 2px solid var(--ember-500);
+        padding-left: 0.6rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .incident-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.35rem 1rem;
+        font-size: 0.8rem;
+        color: var(--smoke-400);
+        border-top: 1px solid var(--basalt-border);
+        padding-top: 0.6rem;
+    }
+
+    .incident-meta strong {
+        font-family: var(--font-mono);
+        color: var(--smoke-200);
+        font-weight: 500;
+    }
+
+    /* ---------- Situation report ---------- */
+    .report-section { margin-bottom: 1.5rem; }
+    .report-section:last-child { margin-bottom: 0; }
+
+    .report-title {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--smoke-400);
+        margin: 0 0 0.75rem;
+    }
+
+    .rank-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.4rem 0;
+    }
+
+    .rank-num {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--smoke-400);
+        width: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .rank-device {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--smoke-200);
+        width: 6rem;
+        flex-shrink: 0;
+    }
+
+    .rank-bar-track {
+        flex: 1;
+        height: 6px;
+        background: var(--basalt-850);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .rank-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--ember-400), var(--flame-600));
+        border-radius: 999px;
+    }
+
+    .rank-count {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--smoke-200);
+        width: 2.5rem;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .signature-split {
+        display: flex;
+        gap: 1px;
+        background: var(--basalt-border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+
+    .signature-cell {
+        flex: 1;
+        background: var(--basalt-900);
+        padding: 0.85rem 1rem;
+    }
+
+    .signature-label {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.6rem;
+        font-weight: 600;
+    }
+
+    .signature-label.is-anomaly { color: var(--ember-400); }
+    .signature-label.is-normal { color: var(--forest-400); }
+
+    .signature-metrics {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--smoke-200);
+    }
+
+    .signature-metrics span { color: var(--smoke-400); margin-right: 0.35rem; }
+
+    .signature-count {
+        font-size: 0.68rem;
+        color: var(--smoke-400);
+        margin-top: 0.6rem;
+    }
+
+    .zone-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.4rem 0;
+        font-size: 0.85rem;
+    }
+
+    .zone-name { color: var(--smoke-200); }
+
+    .zone-value {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        padding: 0.1rem 0.5rem;
+        border-radius: var(--radius-sm);
+        flex-shrink: 0;
+    }
+
+    .hour-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 0.4rem;
+    }
+
+    .hour-chip {
+        background: var(--basalt-900);
+        border: 1px solid var(--basalt-border);
+        border-radius: var(--radius-sm);
+        padding: 0.4rem 0.3rem;
+        text-align: center;
+    }
+
+    .hour-chip-time {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        color: var(--smoke-400);
+    }
+
+    .hour-chip-temp {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-top: 0.2rem;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px) {
+        body { height: auto; overflow: auto; }
+        .app { height: auto; }
+        main.grid { grid-template-columns: 1fr; }
+        .panel-body { max-height: none; overflow-y: visible; }
+        .telemetry-strip { display: none; }
+    }
+
+    @media (max-width: 640px) {
+        .topbar { flex-wrap: wrap; row-gap: 0.6rem; }
+        .readouts { order: 3; width: 100%; justify-content: space-between; gap: 0.75rem; }
+        .readout { max-width: 33%; }
+        .readout-value { font-size: 0.9rem; }
+        .status-pill { order: 2; }
+        .live-clock { order: 1; }
+        .incident-meta { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .waveform-base { animation: none; }
+        .spike { animation: none; opacity: 0.7; }
+        .incident { animation: none; }
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--basalt-border-strong); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--smoke-400); }
+</style>
 </head>
 <body>
 
-    <header>
-        <div>
-            <h1 style="font-weight: 700; letter-spacing: -0.025em; color: #f8fafc; font-size: 1.6rem;">Dashboard Surveillance Feux de forêts</h1>
+<div class="app">
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <div class="brand-text">
+                <h1>Vigie Forêt</h1>
+                <p>Détection incendie par drones — flux temps réel</p>
+            </div>
         </div>
-        <div class="status">
-            <div id="status-dot" class="status-dot disconnected"></div>
+
+        <div class="telemetry-strip" aria-hidden="true">
+            <svg class="waveform" viewBox="0 0 100 40" preserveAspectRatio="none">
+                <line class="waveform-base" x1="0" y1="20" x2="100" y2="20" />
+                <g id="waveform-spikes"></g>
+            </svg>
+        </div>
+
+        <div class="readouts">
+            <div class="readout">
+                <span class="readout-label">Alertes</span>
+                <span id="stat-alerts" class="readout-value">0</span>
+            </div>
+            <div class="readout">
+                <span class="readout-label">Drones</span>
+                <span id="stat-drones" class="readout-value">0</span>
+            </div>
+            <div class="readout readout-wide">
+                <span class="readout-label">Dernière</span>
+                <span id="stat-last-time" class="readout-value">—</span>
+            </div>
+        </div>
+
+        <div class="status-pill">
+            <span id="status-dot" class="status-dot disconnected"></span>
             <span id="status-text">Déconnecté</span>
         </div>
+
+        <div id="live-clock" class="live-clock">--:--:--</div>
     </header>
 
-    <div class="stats-grid">
-        <div class="stat-card alert-count">
-            <span class="stat-label">Alertes détectées</span>
-            <span id="stat-alerts" class="stat-value">0</span>
-        </div>
-        <div class="stat-card active-devices">
-            <span class="stat-label">Drones en alerte</span>
-            <span id="stat-drones" class="stat-value">0</span>
-        </div>
-        <div class="stat-card status-ok">
-            <span class="stat-label">Dernière alerte</span>
-            <span id="stat-last-time" class="stat-value" style="font-size: 1.2rem; line-height: 2rem;">Aucune</span>
-        </div>
-    </div>
+    <main class="grid">
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Journal des incidents</h2>
+                <button id="clear-btn" class="btn-ghost">Effacer</button>
+            </div>
+            <div class="panel-body" id="alerts-scroll">
+                <p id="no-alerts" class="empty-state">En attente de détection d'anomalies forestières…</p>
+                <ol id="alerts-list" class="incident-list" role="log" aria-live="polite" hidden></ol>
+            </div>
+        </section>
 
-    <div class="main-content">
-        <div>
-            <div class="section-header">
-                <h2>Flux d'Alertes en Temps Réel</h2>
-                <button id="clear-btn" class="btn-clear">Effacer l'historique</button>
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Rapport de situation <span class="tag">GOLD</span></h2>
+                <button id="refresh-gold-btn" class="btn-ghost btn-accent">Actualiser</button>
             </div>
-            <div class="alerts-container">
-                <div id="no-alerts" class="no-alerts">
-                    En attente de détection d'anomalies forestières par les moteurs de calcul...
-                </div>
-                <div id="alerts-list" class="alerts-list" style="display: none;"></div>
-            </div>
-        </div>
-
-        <div>
-            <div class="section-header">
-                <h2>Analyses Stratégiques <span style="font-size: 0.7rem; background: #1e293b; color: #f59e0b; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 600; vertical-align: middle; margin-left: 0.5rem; letter-spacing: 0.05em;">GOLD LAYER</span></h2>
-                <button id="refresh-gold-btn" class="btn-clear" style="border-color: #38bdf8; color: #38bdf8;">Actualiser les données</button>
-            </div>
-            <div id="gold-container" class="alerts-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div id="no-gold" class="no-alerts">
-                    Données Gold non chargées. Exécutez le module Spark Analytics pour générer les agrégations.
-                </div>
-                <div id="gold-content" style="display: none; flex-direction: column; gap: 1.5rem;">
-                    <div style="background: #0f172a; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); border-left: 3px solid #f59e0b;">
-                        <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1rem;">Top Drones (Fréquence d'Anomalies)</h3>
-                        <div id="gold-top-devices" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            <div class="panel-body" id="gold-scroll">
+                <p id="no-gold" class="empty-state">Données Gold non chargées. Exécutez le module Spark Analytics pour générer les agrégations.</p>
+                <div id="gold-content" hidden>
+                    <div class="report-section">
+                        <h3 class="report-title">Top drones — fréquence d'anomalies</h3>
+                        <div id="gold-top-devices"></div>
                     </div>
-                    <div style="background: #0f172a; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); border-left: 3px solid #10b981;">
-                        <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1rem;">Moyennes Capteurs (Anomalie vs Normal)</h3>
-                        <div id="gold-signature" style="display: flex; gap: 1rem;"></div>
+                    <div class="report-section">
+                        <h3 class="report-title">Moyennes capteurs — anomalie vs normal</h3>
+                        <div id="gold-signature" class="signature-split"></div>
                     </div>
-                    <div style="background: #0f172a; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); border-left: 3px solid #38bdf8;">
-                        <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1rem;">Moyenne Thermique par Secteur SDIS / ONF</h3>
-                        <div id="gold-zones" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                    <div class="report-section">
+                        <h3 class="report-title">Moyenne thermique par secteur SDIS / ONF</h3>
+                        <div id="gold-zones"></div>
                     </div>
-                    <div style="background: #0f172a; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); border-left: 3px solid #8b5cf6;">
-                        <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1rem;">Profil Thermique Horaire (UTC)</h3>
-                        <div id="gold-hours" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                    <div class="report-section">
+                        <h3 class="report-title">Profil thermique horaire (UTC)</h3>
+                        <div id="gold-hours" class="hour-grid"></div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
+</div>
 
-    <script>
-        const wsUri = "ws://localhost:8080/alerts";
-        let websocket;
-        let alertCount = 0;
-        const uniqueDrones = new Set();
+<script>
+    const wsUri = "ws://localhost:8080/alerts";
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let websocket;
+    let alertCount = 0;
+    let incidentSeq = 0;
+    let spikeX = 4;
+    const uniqueDrones = new Set();
 
-        const statusDot = document.getElementById("status-dot");
-        const statusText = document.getElementById("status-text");
-        const statAlerts = document.getElementById("stat-alerts");
-        const statDrones = document.getElementById("stat-drones");
-        const statLastTime = document.getElementById("stat-last-time");
-        const alertsList = document.getElementById("alerts-list");
-        const noAlerts = document.getElementById("no-alerts");
-        const clearBtn = document.getElementById("clear-btn");
+    const statusDot = document.getElementById("status-dot");
+    const statusText = document.getElementById("status-text");
+    const statAlerts = document.getElementById("stat-alerts");
+    const statDrones = document.getElementById("stat-drones");
+    const statLastTime = document.getElementById("stat-last-time");
+    const alertsList = document.getElementById("alerts-list");
+    const noAlerts = document.getElementById("no-alerts");
+    const clearBtn = document.getElementById("clear-btn");
+    const waveformSpikes = document.getElementById("waveform-spikes");
 
-        function connect() {
-            console.log("Connexion au WebSocket: " + wsUri);
-            websocket = new WebSocket(wsUri);
-
-            websocket.onopen = function() {
-                statusDot.className = "status-dot connected";
-                statusText.innerText = "Connecté (ws://localhost:8080)";
-                console.log("WebSocket connecté");
-            };
-
-            websocket.onclose = function() {
-                statusDot.className = "status-dot disconnected";
-                statusText.innerText = "Reconnexion...";
-                console.log("WebSocket déconnecté, reconnexion dans 2s...");
-                setTimeout(connect, 2000);
-            };
-
-            websocket.onerror = function(err) {
-                console.error("Erreur WebSocket:", err);
-            };
-
-            websocket.onmessage = function(evt) {
-                try {
-                    const alert = JSON.parse(evt.data);
-                    addAlert(alert);
-                } catch (e) {
-                    console.error("Erreur de parsing:", e);
-                }
-            };
-        }
-
-        function addAlert(alert) {
-            // Cacher le message "aucune alerte"
-            noAlerts.style.display = "none";
-            alertsList.style.display = "flex";
-
-            // Mettre à jour les stats
-            alertCount++;
-            statAlerts.innerText = alertCount;
-
-            uniqueDrones.add(alert.device_id);
-            statDrones.innerText = uniqueDrones.size;
-
-            const time = new Date(alert.timestamp);
-            const timeStr = time.toLocaleTimeString();
-            statLastTime.innerText = `${alert.device_id} à ${timeStr}`;
-
-            // Créer l'élément d'alerte
-            const alertDiv = document.createElement("div");
-            alertDiv.className = "alert-item";
-
-            alertDiv.innerHTML = `
-                <div class="alert-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <span class="alert-device" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: #f8fafc;">
-                        <span style="display: inline-block; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 6px #ef4444;"></span>
-                        Unité ${alert.device_id}
-                    </span>
-                    <span class="alert-time" style="font-family: monospace; color: #64748b; font-size: 0.85rem;">${time.toLocaleTimeString()}</span>
-                </div>
-                <div class="alert-reason" style="border-left: 2px solid #ef4444; padding-left: 0.75rem; margin: 0.6rem 0; color: #fca5a5; font-weight: 500; font-size: 0.95rem;">
-                    DÉTECTION : ${alert.reason.toUpperCase()}
-                </div>
-                <div class="alert-meta" style="border-top: 1px solid #1e293b; padding-top: 0.75rem; margin-top: 0.75rem; display: grid; grid-template-columns: 1fr; gap: 0.4rem; font-size: 0.85rem;">
-                    <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">Coordonnées :</span> <strong style="font-family: monospace; color: #cbd5e1;">${alert.latitude.toFixed(5)}, ${alert.longitude.toFixed(5)}</strong></div>
-                    <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">CO₂ :</span> <strong style="font-family: monospace; color: #fbbf24;">${alert.co2.toFixed(0)} ppm</strong></div>
-                    <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">Humidité :</span> <strong style="font-family: monospace; color: #38bdf8;">${alert.humidity.toFixed(1)} %</strong></div>
-                    <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">Secteur SDIS :</span> <strong style="color: #e2e8f0;">${alert.owner}</strong></div>
-                    <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">Contact Urgence :</span> <strong style="font-family: monospace; color: #38bdf8;">${alert.contact}</strong></div>
-                </div>
-            `;
-
-            // Ajouter en haut de la liste
-            alertsList.insertBefore(alertDiv, alertsList.firstChild);
-
-            // Limiter à 100 éléments affichés pour éviter de surcharger le DOM
-            if (alertsList.children.length > 100) {
-                alertsList.removeChild(alertsList.lastChild);
+    function ironbow(t) {
+        const stops = [
+            [0.00, [88, 101, 242]],
+            [0.25, [141, 66, 199]],
+            [0.50, [206, 62, 130]],
+            [0.75, [240, 128, 56]],
+            [1.00, [250, 220, 80]]
+        ];
+        const clamped = Math.max(0, Math.min(1, t));
+        for (let i = 0; i < stops.length - 1; i++) {
+            const [t0, c0] = stops[i];
+            const [t1, c1] = stops[i + 1];
+            if (clamped >= t0 && clamped <= t1) {
+                const f = (clamped - t0) / (t1 - t0);
+                const c = c0.map((v, idx) => Math.round(v + (c1[idx] - v) * f));
+                return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
             }
         }
+        const last = stops[stops.length - 1][1];
+        return `rgb(${last[0]}, ${last[1]}, ${last[2]})`;
+    }
 
-        clearBtn.addEventListener("click", function() {
-            alertsList.innerHTML = "";
-            alertsList.style.display = "none";
-            noAlerts.style.display = "block";
-            alertCount = 0;
-            uniqueDrones.clear();
-            statAlerts.innerText = "0";
-            statDrones.innerText = "0";
-            statLastTime.innerText = "Aucune";
-        });
+    function spawnSpike() {
+        if (prefersReducedMotion) return;
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        const amplitude = 10 + Math.random() * 8;
+        line.setAttribute("x1", spikeX);
+        line.setAttribute("x2", spikeX);
+        line.setAttribute("y1", 20 - amplitude);
+        line.setAttribute("y2", 20 + amplitude);
+        line.setAttribute("class", "spike");
+        waveformSpikes.appendChild(line);
+        line.addEventListener("animationend", () => line.remove());
+        spikeX = spikeX + 14 > 96 ? 4 : spikeX + 14;
+    }
 
-        const refreshGoldBtn = document.getElementById("refresh-gold-btn");
-        const noGold = document.getElementById("no-gold");
-        const goldContent = document.getElementById("gold-content");
-        const goldTopDevices = document.getElementById("gold-top-devices");
-        const goldSignature = document.getElementById("gold-signature");
-        const goldZones = document.getElementById("gold-zones");
-        const goldHours = document.getElementById("gold-hours");
+    function connect() {
+        websocket = new WebSocket(wsUri);
 
-        const zoneNames = {
-            "spexq": "SDIS 13 - Secteur Aix-en-Provence",
-            "spevg": "SDIS 13 - Calanques Sud",
-            "spsqp": "SDIS 83 - Massif des Maures",
-            "spsz7": "SDIS 83 - Massif de l'Esterel",
-            "spezw": "SDIS 13 - Sainte-Victoire",
-            "spu90": "SDIS 04 - Verdon",
-            "spv4g": "SDIS 06 - Mercantour",
-            "spgc3": "SDIS 84 - Luberon",
-            "ezzmn": "SDIS 33 - Landes de Gascogne",
-            "u0t18": "ONF - Massif des Vosges",
-            "u4pru": "ONF - Vosges (réf test)",
-            "sp3e3": "SDIS 13 - Calanques (réf test)",
-            "gbsuv": "Forestry Commission - Highlands"
+        websocket.onopen = function () {
+            statusDot.className = "status-dot connected";
+            statusText.innerText = "Connecté";
         };
 
-        async function fetchGoldData() {
+        websocket.onclose = function () {
+            statusDot.className = "status-dot disconnected";
+            statusText.innerText = "Reconnexion…";
+            setTimeout(connect, 2000);
+        };
+
+        websocket.onerror = function (err) {
+            console.error("Erreur WebSocket:", err);
+        };
+
+        websocket.onmessage = function (evt) {
             try {
-                const response = await fetch("http://localhost:8080/gold");
-                if (!response.ok) {
-                    throw new Error("Erreur HTTP: " + response.status);
-                }
-                const data = await response.json();
-                renderGoldData(data);
+                const alert = JSON.parse(evt.data);
+                addAlert(alert);
             } catch (e) {
-                console.log("Données Gold indisponibles ou erreur de fetch:", e.message);
-                noGold.style.display = "block";
-                goldContent.style.display = "none";
+                console.error("Erreur de parsing:", e);
             }
+        };
+    }
+
+    function addAlert(alert) {
+        noAlerts.style.display = "none";
+        alertsList.hidden = false;
+
+        alertCount++;
+        incidentSeq++;
+        statAlerts.innerText = alertCount;
+
+        uniqueDrones.add(alert.device_id);
+        statDrones.innerText = uniqueDrones.size;
+
+        const time = new Date(alert.timestamp);
+        const timeStr = time.toLocaleTimeString();
+        statLastTime.innerText = `${alert.device_id} à ${timeStr}`;
+
+        spawnSpike();
+
+        const item = document.createElement("li");
+        item.className = "incident";
+        item.innerHTML = `
+            <div class="incident-top">
+                <span class="incident-device">${escapeHtml(alert.device_id)}</span>
+                <span class="incident-id">N° ${String(incidentSeq).padStart(3, "0")}</span>
+                <span class="incident-time">${timeStr}</span>
+            </div>
+            <div class="incident-reason">Détection : ${escapeHtml((alert.reason || "").toUpperCase())}</div>
+            <div class="incident-meta">
+                <div>Coordonnées <br><strong>${alert.latitude.toFixed(5)}, ${alert.longitude.toFixed(5)}</strong></div>
+                <div>Température <br><strong style="color:${ironbow((alert.temperature - 15) / 65)}">${alert.temperature.toFixed(1)} °C</strong></div>
+                <div>Fumée <br><strong>${alert.smoke.toFixed(1)}</strong></div>
+                <div>CO₂ <br><strong>${alert.co2.toFixed(0)} ppm</strong></div>
+                <div>Humidité <br><strong>${alert.humidity.toFixed(1)} %</strong></div>
+                <div>Secteur <br><strong>${escapeHtml(alert.owner)}</strong></div>
+                <div>Contact urgence <br><strong>${escapeHtml(alert.contact)}</strong></div>
+            </div>
+        `;
+
+        alertsList.insertBefore(item, alertsList.firstChild);
+
+        if (alertsList.children.length > 100) {
+            alertsList.removeChild(alertsList.lastChild);
+        }
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement("div");
+        div.innerText = str == null ? "" : String(str);
+        return div.innerHTML;
+    }
+
+    clearBtn.addEventListener("click", function () {
+        alertsList.innerHTML = "";
+        alertsList.hidden = true;
+        noAlerts.style.display = "block";
+        alertCount = 0;
+        incidentSeq = 0;
+        uniqueDrones.clear();
+        statAlerts.innerText = "0";
+        statDrones.innerText = "0";
+        statLastTime.innerText = "—";
+    });
+
+    const refreshGoldBtn = document.getElementById("refresh-gold-btn");
+    const noGold = document.getElementById("no-gold");
+    const goldContent = document.getElementById("gold-content");
+    const goldTopDevices = document.getElementById("gold-top-devices");
+    const goldSignature = document.getElementById("gold-signature");
+    const goldZones = document.getElementById("gold-zones");
+    const goldHours = document.getElementById("gold-hours");
+
+    const zoneNames = {
+        "u4pru": "Office National des Forets - Vosges",
+        "sp3e3": "SDIS 13 - Massif des Calanques",
+        "gbsuv": "Forestry Commission - Highlands",
+        "spexq": "SDIS 13 - Secteur Aix-en-Provence",
+        "spevg": "SDIS 13 - Massif des Calanques Sud",
+        "spsqp": "SDIS 83 - Massif des Maures",
+        "spsz7": "SDIS 83 - Massif de l'Esterel",
+        "spezw": "SDIS 13 - Massif de la Sainte-Victoire",
+        "spu90": "SDIS 04 - Parc Naturel Regional du Verdon",
+        "spv4g": "SDIS 06 - Parc National du Mercantour",
+        "spgc3": "SDIS 84 - Parc Naturel Regional du Luberon",
+        "ezzmn": "SDIS 33 - Foret des Landes de Gascogne",
+        "u0t18": "Office National des Forets - Massif des Vosges"
+    };
+
+    async function fetchGoldData() {
+        try {
+            const response = await fetch("http://localhost:8080/gold");
+            if (!response.ok) {
+                throw new Error("Erreur HTTP: " + response.status);
+            }
+            const data = await response.json();
+            renderGoldData(data);
+        } catch (e) {
+            console.log("Données Gold indisponibles ou erreur de fetch:", e.message);
+            noGold.style.display = "block";
+            goldContent.hidden = true;
+        }
+    }
+
+    function renderGoldData(data) {
+        if (!data || Object.keys(data).length === 0) {
+            noGold.style.display = "block";
+            goldContent.hidden = true;
+            return;
         }
 
-        function renderGoldData(data) {
-            if (!data || Object.keys(data).length === 0) {
-                noGold.style.display = "block";
-                goldContent.style.display = "none";
-                return;
-            }
+        noGold.style.display = "none";
+        goldContent.hidden = false;
 
-            noGold.style.display = "none";
-            goldContent.style.display = "flex";
+        const zones = data.avg_temperature_by_zone || [];
+        const hours = data.avg_readings_by_hour_of_day || [];
+        const signature = data.co2_humidity_by_reading_type || [];
+        const allTemps = zones.map(z => z.avg_temperature)
+            .concat(hours.map(h => h.avg_temperature))
+            .concat(signature.map(s => s.avg_temperature));
+        const tMin = allTemps.length ? Math.min(...allTemps) : 15;
+        const tMax = allTemps.length ? Math.max(...allTemps) : 45;
+        const norm = (v) => (tMax === tMin ? 0.5 : (v - tMin) / (tMax - tMin));
 
-            goldTopDevices.innerHTML = "";
-            const topDevices = data.top_devices_by_anomalies || [];
-            if (topDevices.length === 0) {
-                goldTopDevices.innerHTML = "<span style='color: var(--text-muted); font-size: 0.9rem;'>Aucune anomalie enregistrée</span>";
-            } else {
-                topDevices.slice(0, 5).forEach(item => {
-                    const row = document.createElement("div");
-                    row.style.display = "flex";
-                    row.style.justifyContent = "space-between";
-                    row.style.alignItems = "center";
-                    row.style.background = "#1e293b";
-                    row.style.padding = "0.6rem 1rem";
-                    row.style.borderRadius = "6px";
-                    row.style.border = "1px solid #334155";
-                    row.innerHTML = `<span style="font-family: monospace; color: #e2e8f0; font-weight: 600;">Unité ${item.device_id}</span><span style="background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.3);">${item.anomaly_count} alertes</span>`;
-                    goldTopDevices.appendChild(row);
-                });
-            }
-
-            goldSignature.innerHTML = "";
-            const signature = data.co2_humidity_by_reading_type || [];
-            signature.forEach(item => {
-                const badge = document.createElement("div");
-                badge.style.flex = "1";
-                badge.style.background = "#1e293b";
-                badge.style.padding = "1rem";
-                badge.style.borderRadius = "6px";
-                badge.style.border = "1px solid #334155";
-                badge.style.textAlign = "center";
-                const isAnomaly = item.reading_type === "anomaly";
-                const label = isAnomaly ? "Lectures Anomalie" : "Lectures Normales";
-                const labelColor = isAnomaly ? "#f87171" : "#34d399";
-                badge.innerHTML = `<div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: ${labelColor}; font-weight: 600; margin-bottom: 0.4rem;">${label}</div><div style="font-size: 1rem; font-weight: 700; font-family: monospace; color: #f97316;">Temp ${item.avg_temperature.toFixed(1)} °C</div><div style="font-size: 1rem; font-weight: 700; font-family: monospace; margin-top: 0.2rem; color: #38bdf8;">Humidité ${item.avg_humidity.toFixed(1)} %</div><div style="font-size: 1rem; font-weight: 700; font-family: monospace; margin-top: 0.2rem; color: #fbbf24;">CO₂ ${item.avg_co2.toFixed(0)} ppm</div><div style="font-size: 1rem; font-weight: 700; font-family: monospace; margin-top: 0.2rem; color: #cbd5e1;">Fumée ${item.avg_smoke.toFixed(1)}</div><div style="font-size: 0.7rem; color: #475569; margin-top: 0.3rem;">${item.reading_count} lectures</div>`;
-                goldSignature.appendChild(badge);
+        goldTopDevices.innerHTML = "";
+        const topDevices = data.top_devices_by_anomalies || [];
+        if (topDevices.length === 0) {
+            goldTopDevices.innerHTML = "<p class='empty-state'>Aucune anomalie enregistrée</p>";
+        } else {
+            const maxCount = Math.max(...topDevices.map(d => d.anomaly_count));
+            topDevices.slice(0, 5).forEach((item, idx) => {
+                const row = document.createElement("div");
+                row.className = "rank-row";
+                const pct = maxCount ? (item.anomaly_count / maxCount) * 100 : 0;
+                row.innerHTML = `
+                    <span class="rank-num">${idx + 1}</span>
+                    <span class="rank-device">${escapeHtml(item.device_id)}</span>
+                    <span class="rank-bar-track"><span class="rank-bar-fill" style="width:${pct}%"></span></span>
+                    <span class="rank-count">${item.anomaly_count}</span>
+                `;
+                goldTopDevices.appendChild(row);
             });
+        }
 
-            goldZones.innerHTML = "";
-            const zones = data.avg_temperature_by_zone || [];
-            if (zones.length === 0) {
-                goldZones.innerHTML = "<span style='color: var(--text-muted); font-size: 0.9rem;'>Aucune donnée de secteur</span>";
-            } else {
-                zones.forEach(item => {
-                    const row = document.createElement("div");
-                    row.style.display = "flex";
-                    row.style.justifyContent = "space-between";
-                    row.style.alignItems = "center";
-                    row.style.background = "#1e293b";
-                    row.style.padding = "0.6rem 1rem";
-                    row.style.borderRadius = "6px";
-                    row.style.border = "1px solid #334155";
-                    const zoneName = zoneNames[item.geohash] || `Secteur (${item.geohash})`;
-                    const tempColor = item.avg_temperature > 40 ? "#f87171" : "#34d399";
-                    row.innerHTML = `<span style="font-size: 0.875rem; color: #cbd5e1; font-weight: 500;">${zoneName}</span><strong style="color: ${tempColor}; font-family: monospace; font-size: 0.95rem;">${item.avg_temperature.toFixed(1)} °C</strong>`;
-                    goldZones.appendChild(row);
-                });
-            }
+        goldSignature.innerHTML = "";
+        signature.forEach(item => {
+            const cell = document.createElement("div");
+            cell.className = "signature-cell";
+            const isAnomaly = item.reading_type === "anomaly";
+            const label = isAnomaly ? "Lectures anomalie" : "Lectures normales";
+            const tempColor = ironbow(norm(item.avg_temperature));
+            cell.innerHTML = `
+                <div class="signature-label ${isAnomaly ? "is-anomaly" : "is-normal"}">${label}</div>
+                <div class="signature-metrics">
+                    <div><span>Température</span><strong style="color:${tempColor}">${item.avg_temperature.toFixed(1)} °C</strong></div>
+                    <div><span>Humidité</span>${item.avg_humidity.toFixed(1)} %</div>
+                    <div><span>CO₂</span>${item.avg_co2.toFixed(0)} ppm</div>
+                    <div><span>Fumée</span>${item.avg_smoke.toFixed(1)}</div>
+                </div>
+                <div class="signature-count">${item.reading_count} lectures</div>
+            `;
+            goldSignature.appendChild(cell);
+        });
 
-            goldHours.innerHTML = "";
-            const hours = data.avg_readings_by_hour_of_day || [];
-            hours.forEach(item => {
-                const chip = document.createElement("div");
-                chip.style.background = "#1e293b";
-                chip.style.padding = "0.5rem 0.75rem";
-                chip.style.borderRadius = "6px";
-                chip.style.border = "1px solid #334155";
-                chip.style.fontSize = "0.85rem";
-                chip.style.display = "flex";
-                chip.style.alignItems = "center";
-                chip.style.gap = "0.5rem";
-                chip.innerHTML = `<span style="color: #64748b; font-family: monospace; font-weight: 600;">${item.hour.toString().padStart(2, '0')}:00 UTC</span><strong style="color: #e2e8f0; font-family: monospace;">${item.avg_temperature.toFixed(1)}°C</strong> <span style="font-size: 0.75rem; color: #475569;">(${item.reading_count} lectures)</span>`;
-                goldHours.appendChild(chip);
+        goldZones.innerHTML = "";
+        if (zones.length === 0) {
+            goldZones.innerHTML = "<p class='empty-state'>Aucune donnée de secteur</p>";
+        } else {
+            zones.forEach(item => {
+                const row = document.createElement("div");
+                row.className = "zone-row";
+                const color = ironbow(norm(item.avg_temperature));
+                const zoneName = zoneNames[item.geohash] || `Secteur (${item.geohash})`;
+                row.innerHTML = `
+                    <span class="zone-name">${escapeHtml(zoneName)}</span>
+                    <span class="zone-value" style="background:${color}22; color:${color}; border:1px solid ${color}55">${item.avg_temperature.toFixed(1)} °C</span>
+                `;
+                goldZones.appendChild(row);
             });
         }
 
-        if (refreshGoldBtn) {
-            refreshGoldBtn.addEventListener("click", fetchGoldData);
-        }
+        goldHours.innerHTML = "";
+        hours.forEach(item => {
+            const chip = document.createElement("div");
+            chip.className = "hour-chip";
+            const color = ironbow(norm(item.avg_temperature));
+            chip.title = `${item.reading_count} lectures`;
+            chip.innerHTML = `
+                <div class="hour-chip-time">${item.hour.toString().padStart(2, "0")}h</div>
+                <div class="hour-chip-temp" style="color:${color}">${item.avg_temperature.toFixed(1)}°</div>
+            `;
+            goldHours.appendChild(chip);
+        });
+    }
 
-        fetchGoldData();
-        setInterval(fetchGoldData, 15000);
+    if (refreshGoldBtn) {
+        refreshGoldBtn.addEventListener("click", fetchGoldData);
+    }
 
-        // Démarrer la connexion au chargement
-        connect();
-    </script>
+    fetchGoldData();
+    setInterval(fetchGoldData, 15000);
+
+    const liveClock = document.getElementById("live-clock");
+    function tickClock() {
+        liveClock.textContent = new Date().toLocaleTimeString();
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    connect();
+</script>
 </body>
 </html>
