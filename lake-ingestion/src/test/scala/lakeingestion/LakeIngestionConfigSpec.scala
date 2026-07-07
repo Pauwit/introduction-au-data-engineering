@@ -37,19 +37,11 @@ class LakeIngestionConfigSpec extends AnyFlatSpec with Matchers {
     LakeIngestionConfig.batchSize(Map("BATCH_SIZE" -> "100")) shouldEqual 100
   }
 
-  it should "fall back to the default on an invalid value" in {
-    LakeIngestionConfig.batchSize(Map("BATCH_SIZE" -> "not-a-number")) shouldEqual 50
-  }
-
   "batchIntervalSeconds" should "default to 5" in {
     LakeIngestionConfig.batchIntervalSeconds(Map.empty) shouldEqual 5
   }
 
   it should "use the env value when present" in {
     LakeIngestionConfig.batchIntervalSeconds(Map("BATCH_INTERVAL_SECONDS" -> "10")) shouldEqual 10
-  }
-
-  it should "fall back to the default on an invalid value" in {
-    LakeIngestionConfig.batchIntervalSeconds(Map("BATCH_INTERVAL_SECONDS" -> "not-a-number")) shouldEqual 5
   }
 }

@@ -1,7 +1,6 @@
 package iotsimulator
 
 import scala.concurrent.duration._
-import scala.util.Try
 
 object SimulatorConfig {
 
@@ -12,8 +11,8 @@ object SimulatorConfig {
     env.getOrElse("DRONE_EVENTS_TOPIC", "drone-events")
 
   def deviceCount(env: Map[String, String]): Int =
-    Try(env.getOrElse("DEVICE_COUNT", "5").toInt).toOption.filter(_ > 0).getOrElse(5)
+    env.getOrElse("DEVICE_COUNT", "5").toInt
 
   def tickInterval(env: Map[String, String]): FiniteDuration =
-    Try(env.getOrElse("TICK_INTERVAL_SECONDS", "30").toInt).toOption.filter(_ > 0).getOrElse(30).seconds
+    env.getOrElse("TICK_INTERVAL_SECONDS", "30").toInt.seconds
 }

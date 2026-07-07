@@ -1,7 +1,5 @@
 package lakeingestion
 
-import scala.util.Try
-
 object LakeIngestionConfig {
 
   def bootstrapServers(env: Map[String, String]): String =
@@ -14,8 +12,8 @@ object LakeIngestionConfig {
     env.getOrElse("DATA_LAKE_ROOT", "data-lake")
 
   def batchSize(env: Map[String, String]): Int =
-    Try(env.getOrElse("BATCH_SIZE", "50").toInt).toOption.filter(_ > 0).getOrElse(50)
+    env.getOrElse("BATCH_SIZE", "50").toInt
 
   def batchIntervalSeconds(env: Map[String, String]): Int =
-    Try(env.getOrElse("BATCH_INTERVAL_SECONDS", "5").toInt).toOption.filter(_ > 0).getOrElse(5)
+    env.getOrElse("BATCH_INTERVAL_SECONDS", "5").toInt
 }

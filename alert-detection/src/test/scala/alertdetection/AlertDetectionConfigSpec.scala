@@ -36,8 +36,4 @@ class AlertDetectionConfigSpec extends AnyFlatSpec with Matchers {
   it should "use the env value when present" in {
     AlertDetectionConfig.windowDurationSeconds(Map("WINDOW_DURATION_SECONDS" -> "30")) shouldEqual 30
   }
-
-  it should "fall back to the default on a non-positive value" in {
-    AlertDetectionConfig.windowDurationSeconds(Map("WINDOW_DURATION_SECONDS" -> "-10")) shouldEqual 60
-  }
 }

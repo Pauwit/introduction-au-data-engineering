@@ -26,10 +26,6 @@ class AlertServiceConfigSpec extends AnyFlatSpec with Matchers {
     AlertServiceConfig.contactsRefreshInterval(Map.empty) shouldEqual (300.seconds)
   }
 
-  it should "fall back to the default on an invalid value" in {
-    AlertServiceConfig.contactsRefreshInterval(Map("CONTACTS_REFRESH_SECONDS" -> "not-a-number")) shouldEqual (300.seconds)
-  }
-
   "geohashPrecision" should "default to 5" in {
     AlertServiceConfig.geohashPrecision(Map.empty) shouldEqual 5
   }
@@ -40,9 +36,5 @@ class AlertServiceConfigSpec extends AnyFlatSpec with Matchers {
 
   "httpPort" should "default to 8080" in {
     AlertServiceConfig.httpPort(Map.empty) shouldEqual 8080
-  }
-
-  it should "fall back to the default on an invalid value" in {
-    AlertServiceConfig.httpPort(Map("HTTP_PORT" -> "not-a-number")) shouldEqual 8080
   }
 }

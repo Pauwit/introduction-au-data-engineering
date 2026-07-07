@@ -19,7 +19,6 @@ object AlertDetectionConfig {
     env.getOrElse("SPARK_MASTER", "local[*]")
 
   def windowDurationSeconds(env: Map[String, String]): Int = {
-    val seconds = env.getOrElse("WINDOW_DURATION_SECONDS", "60").toInt
-    if (seconds > 0) seconds else 60
+    env.getOrElse("WINDOW_DURATION_SECONDS", "60").toInt
   }
 }

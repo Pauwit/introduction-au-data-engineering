@@ -1,7 +1,6 @@
 package alertservice
 
 import scala.concurrent.duration._
-import scala.util.Try
 
 object AlertServiceConfig {
 
@@ -15,14 +14,14 @@ object AlertServiceConfig {
     env.getOrElse("CONTACTS_RESOURCE", "contacts-seed.json")
 
   def contactsRefreshInterval(env: Map[String, String]): FiniteDuration =
-    Try(env.getOrElse("CONTACTS_REFRESH_SECONDS", "300").toInt).toOption.filter(_ > 0).getOrElse(300).seconds
+    env.getOrElse("CONTACTS_REFRESH_SECONDS", "300").toInt.seconds
 
   def geohashPrecision(env: Map[String, String]): Int =
-    Try(env.getOrElse("GEOHASH_PRECISION", "5").toInt).toOption.filter(_ > 0).getOrElse(5)
+    env.getOrElse("GEOHASH_PRECISION", "5").toInt
 
   def httpHost(env: Map[String, String]): String =
     env.getOrElse("HTTP_HOST", "0.0.0.0")
 
   def httpPort(env: Map[String, String]): Int =
-    Try(env.getOrElse("HTTP_PORT", "8080").toInt).toOption.filter(_ > 0).getOrElse(8080)
+    env.getOrElse("HTTP_PORT", "8080").toInt
 }
