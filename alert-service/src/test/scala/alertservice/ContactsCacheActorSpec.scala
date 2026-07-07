@@ -13,19 +13,19 @@ class ContactsCacheActorSpec extends TestKit(ActorSystem("contacts-cache-actor-s
   }
 
   "ContactsCacheActor" should "load contacts on start and answer GetContacts" in {
-    val actor = system.actorOf(ContactsCacheActor.props("test-contacts.json"))
+    val actor = system.actorOf(ContactsCacheActor.props("src/test/resources/test-contacts.json"))
 
     actor ! ContactsCacheActor.GetContacts
 
-    expectMsg(ContactsRepository.load("test-contacts.json"))
+    expectMsg(ContactsRepository.load("src/test/resources/test-contacts.json"))
   }
 
   it should "reload on demand and answer with the freshly loaded contacts" in {
-    val actor = system.actorOf(ContactsCacheActor.props("test-contacts.json"))
+    val actor = system.actorOf(ContactsCacheActor.props("src/test/resources/test-contacts.json"))
 
     actor ! ContactsCacheActor.Reload
     actor ! ContactsCacheActor.GetContacts
 
-    expectMsg(ContactsRepository.load("test-contacts.json"))
+    expectMsg(ContactsRepository.load("src/test/resources/test-contacts.json"))
   }
 }

@@ -162,3 +162,13 @@ flowchart TB
     style SERVICES fill:#e1f5ee,stroke:#0f6e56,color:#000
     style LEGEND fill:#f5f5f5,stroke:#333,stroke-dasharray: 5 5,color:#000
 ```
+
+---
+
+## Dashboard & gold endpoint (PoC simplification)
+
+In the target architecture above, the **Analytics Dashboard** is a separate end service. In the PoC we do not stand up a second web server for it: the Alert Service already runs an Akka HTTP server for the `/alerts` WebSocket and `/health`, so it also serves the monitoring page (`dashboard.html`) and a read-only `/gold` endpoint.
+
+`/gold` performs **no computation** — it simply reads the `gold-summary.json` file produced by the `analytics` batch job in the data lake (`$DATA_LAKE_ROOT/gold/`) and returns it as-is, so the dashboard can render the gold panels alongside the live alert stream. The alert path itself never touches the gold data.
+
+This keeps the demo to a single HTTP server. In a real deployment, serving the dashboard and the gold aggregations would move to the dedicated Analytics Dashboard service, leaving the Alert Service with only `/alerts` and `/health`.

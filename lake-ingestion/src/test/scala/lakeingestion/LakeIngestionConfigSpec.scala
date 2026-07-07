@@ -21,8 +21,8 @@ class LakeIngestionConfigSpec extends AnyFlatSpec with Matchers {
     LakeIngestionConfig.inputTopic(Map("DRONE_EVENTS_TOPIC" -> "custom-events")) shouldEqual "custom-events"
   }
 
-  "dataLakeRoot" should "default to data-lake" in {
-    LakeIngestionConfig.dataLakeRoot(Map.empty) shouldEqual "data-lake"
+  "dataLakeRoot" should "default to ../data-lake" in {
+    LakeIngestionConfig.dataLakeRoot(Map.empty) shouldEqual "../data-lake"
   }
 
   it should "use the env value when present" in {

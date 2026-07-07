@@ -39,7 +39,7 @@ object Main {
       .map(record => decode[Alert](record.value()))
       .collect { case Right(alert) => alert }
 
-    val contactsCache = system.actorOf(ContactsCacheActor.props(AlertServiceConfig.contactsResource(env)))
+    val contactsCache = system.actorOf(ContactsCacheActor.props(AlertServiceConfig.contactsPath(env)))
     val refreshInterval = AlertServiceConfig.contactsRefreshInterval(env)
 
     val _ = Source
@@ -81,21 +81,12 @@ object Main {
     val goldRoute = path("gold") {
       respondWithHeaders(corsHeaders) {
         get {
-          val candidatePaths = List(
-            s"${env.getOrElse("DATA_LAKE_ROOT", "data-lake")}/gold/gold-summary.json",
-            "../analytics/data-lake/gold/gold-summary.json",
-            "../lake-ingestion/data-lake/gold/gold-summary.json",
-            "../data-lake/gold/gold-summary.json",
-            "data-lake/gold/gold-summary.json"
-          ).map(java.nio.file.Paths.get(_))
-
-          val existingPathOpt = candidatePaths.find(java.nio.file.Files.exists(_))
-          existingPathOpt match {
-            case Some(summaryPath) =>
-              val content = new String(java.nio.file.Files.readAllBytes(summaryPath), "UTF-8")
-              complete(HttpEntity(ContentTypes.`application/json`, content))
-            case None =>
-              complete(StatusCodes.NotFound -> "{}")
+          val summaryPath = java.nio.file.Paths.get(s"${env.getOrElse("DATA_LAKE_ROOT", "../data-lake")}/gold/gold-summary.json")
+          if (java.nio.file.Files.exists(summaryPath)) {
+            val content = new String(java.nio.file.Files.readAllBytes(summaryPath), "UTF-8")
+            complete(HttpEntity(ContentTypes.`application/json`, content))
+          } else {
+            complete(StatusCodes.NotFound -> "{}")
           }
         }
       }

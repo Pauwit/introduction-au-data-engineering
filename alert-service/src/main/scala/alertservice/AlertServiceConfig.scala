@@ -10,8 +10,14 @@ object AlertServiceConfig {
   def alertsTopic(env: Map[String, String]): String =
     env.getOrElse("ALERTS_TOPIC", "alerts")
 
+  def dataLakeRoot(env: Map[String, String]): String =
+    env.getOrElse("DATA_LAKE_ROOT", "../data-lake")
+
   def contactsResource(env: Map[String, String]): String =
-    env.getOrElse("CONTACTS_RESOURCE", "contacts-seed.json")
+    env.getOrElse("CONTACTS_RESOURCE", "contacts/contacts-seed.json")
+
+  def contactsPath(env: Map[String, String]): String =
+    s"${dataLakeRoot(env)}/${contactsResource(env)}"
 
   def contactsRefreshInterval(env: Map[String, String]): FiniteDuration =
     env.getOrElse("CONTACTS_REFRESH_SECONDS", "300").toInt.seconds

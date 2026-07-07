@@ -18,8 +18,16 @@ class AlertServiceConfigSpec extends AnyFlatSpec with Matchers {
     AlertServiceConfig.alertsTopic(Map.empty) shouldEqual "alerts"
   }
 
-  "contactsResource" should "default to contacts-seed.json" in {
-    AlertServiceConfig.contactsResource(Map.empty) shouldEqual "contacts-seed.json"
+  "contactsResource" should "default to contacts/contacts-seed.json" in {
+    AlertServiceConfig.contactsResource(Map.empty) shouldEqual "contacts/contacts-seed.json"
+  }
+
+  "dataLakeRoot" should "default to ../data-lake" in {
+    AlertServiceConfig.dataLakeRoot(Map.empty) shouldEqual "../data-lake"
+  }
+
+  "contactsPath" should "join the data lake root and the contacts resource" in {
+    AlertServiceConfig.contactsPath(Map("DATA_LAKE_ROOT" -> "/lake", "CONTACTS_RESOURCE" -> "contacts/seed.json")) shouldEqual "/lake/contacts/seed.json"
   }
 
   "contactsRefreshInterval" should "default to 300 seconds" in {
