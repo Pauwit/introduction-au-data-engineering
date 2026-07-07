@@ -9,7 +9,7 @@ object LakeIngestionConfig {
     env.getOrElse("DRONE_EVENTS_TOPIC", "drone-events")
 
   def dataLakeRoot(env: Map[String, String]): String =
-    env.getOrElse("DATA_LAKE_ROOT", "data-lake")
+    env.getOrElse("DATA_LAKE_ROOT", "../data-lake")
 
   def batchSize(env: Map[String, String]): Int =
     env.getOrElse("BATCH_SIZE", "50").toInt

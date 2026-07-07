@@ -82,7 +82,7 @@ object Main {
       respondWithHeaders(corsHeaders) {
         get {
           val candidatePaths = List(
-            s"${env.getOrElse("DATA_LAKE_ROOT", "data-lake")}/gold/gold-summary.json",
+            s"${env.getOrElse("DATA_LAKE_ROOT", "../data-lake")}/gold/gold-summary.json",
             "../analytics/data-lake/gold/gold-summary.json",
             "../lake-ingestion/data-lake/gold/gold-summary.json",
             "../data-lake/gold/gold-summary.json",

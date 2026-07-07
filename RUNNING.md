@@ -109,7 +109,7 @@ DATA_LAKE_ROOT=/absolute/path/to/data-lake sbt run
 |---|---|
 | `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` |
 | `DRONE_EVENTS_TOPIC` | `drone-events` |
-| `DATA_LAKE_ROOT` | `data-lake` (relative to the current directory) |
+| `DATA_LAKE_ROOT` | `../data-lake` (relative to the current directory) |
 | `BATCH_SIZE` | `50` |
 | `BATCH_INTERVAL_SECONDS` | `5` |
 
@@ -126,7 +126,7 @@ DATA_LAKE_ROOT=/absolute/path/to/data-lake sbt run
 
 | Env var | Default |
 |---|---|
-| `DATA_LAKE_ROOT` | `data-lake` |
+| `DATA_LAKE_ROOT` | `../data-lake` |
 | `SPARK_MASTER` | `local[*]` |
 
 This exits on its own once done (it is not a long-running service).

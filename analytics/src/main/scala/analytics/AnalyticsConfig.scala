@@ -3,7 +3,7 @@ package analytics
 object AnalyticsConfig {
 
   def dataLakeRoot(env: Map[String, String]): String =
-    env.getOrElse("DATA_LAKE_ROOT", "data-lake")
+    env.getOrElse("DATA_LAKE_ROOT", "../data-lake")
 
   def bronzePath(env: Map[String, String]): String =
     s"${dataLakeRoot(env)}/bronze/drone-events"
