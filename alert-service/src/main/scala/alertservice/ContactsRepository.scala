@@ -4,7 +4,6 @@ import io.circe.Decoder
 import io.circe.parser.decode
 
 import scala.io.Source
-import scala.util.Try
 
 final case class ContactRecord(geohash: String, owner: String, contact: String)
 
@@ -17,7 +16,9 @@ object ContactRecord {
 object ContactsRepository {
 
   def load(resource: String): Map[String, Contact] = {
-    val raw = Try(Source.fromResource(resource).mkString).getOrElse("[]")
+    val raw = Option(getClass.getClassLoader.getResourceAsStream(resource))
+      .map(stream => Source.fromInputStream(stream).mkString)
+      .getOrElse("[]")
     decode[List[ContactRecord]](raw)
       .getOrElse(Nil)
       .map(record => record.geohash -> Contact(record.owner, record.contact))

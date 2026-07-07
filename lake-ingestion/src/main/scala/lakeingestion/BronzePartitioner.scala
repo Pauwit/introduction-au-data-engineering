@@ -5,14 +5,10 @@ import io.circe.parser.decode
 
 import java.time.{Instant, ZoneOffset}
 import java.time.format.DateTimeFormatter
-import scala.util.Try
 
 final case class RawTimestamp(timestamp: Instant)
 
 object RawTimestamp {
-  private implicit val instantDecoder: Decoder[Instant] =
-    Decoder.decodeString.emap(value => Try(Instant.parse(value)).toOption.toRight(s"invalid timestamp: $value"))
-
   implicit val decoder: Decoder[RawTimestamp] = Decoder.forProduct1("timestamp")(RawTimestamp.apply)
 }
 

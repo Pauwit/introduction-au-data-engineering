@@ -3,7 +3,6 @@ package iotsimulator
 import io.circe.{Decoder, Encoder}
 
 import java.time.Instant
-import scala.util.Try
 
 final case class DroneEvent(
   timestamp: Instant,
@@ -19,9 +18,6 @@ final case class DroneEvent(
 object DroneEvent {
   private implicit val instantEncoder: Encoder[Instant] =
     Encoder.encodeString.contramap(_.toString)
-
-  private implicit val instantDecoder: Decoder[Instant] =
-    Decoder.decodeString.emap(value => Try(Instant.parse(value)).toOption.toRight(s"invalid timestamp: $value"))
 
   implicit val encoder: Encoder[DroneEvent] = Encoder.forProduct8(
     "timestamp", "device_id", "latitude", "longitude", "temperature", "humidity", "co2", "smoke"
