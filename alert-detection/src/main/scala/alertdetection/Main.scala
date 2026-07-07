@@ -11,6 +11,7 @@ object Main {
     val spark = SparkSession.builder()
       .appName("alert-detection")
       .master(AlertDetectionConfig.sparkMaster(env))
+      .config("spark.hadoop.fs.file.impl", "org.apache.hadoop.fs.RawLocalFileSystem")
       .getOrCreate()
 
     val rawEvents = spark.readStream

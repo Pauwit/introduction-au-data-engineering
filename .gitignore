@@ -6,3 +6,4 @@ project/target/
 *.log
 data-lake/
 .bsp
+checkpoints
