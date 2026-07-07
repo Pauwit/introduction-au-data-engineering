@@ -54,17 +54,17 @@ The alert service addresses a critical life-safety requirement and is bound by t
 
 **High availability.** The alert pipeline cannot go offline. Even during partial failures (broker crash, network partition), alerts must keep flowing. Under the CAP theorem, the alert components must favor Availability over strict Consistency, a slightly stale alert is acceptable; a missing alert is not.
 
-**Stream processing.** Data must be analyzed in flight, in memory, as it arrives - writing to disk first and querying later is incompatible with sub-second targets. The processing engine must consume events continuously and apply detection rules on sliding time windows.
+**Stream processing.** Data must be analyzed in flight, in memory, as it arrives - writing to disk first and querying later is incompatible with sub-second targets. The processing engine must consume events continuously and apply detection rules on tumbling time windows.
 
 ### 2.b - Components required
 
 The alert pipeline relies on three complementary components:
 
 **1. A distributed message broker - Apache Kafka.**
-Kafka ingests millions of real-time sensor events, partitions them by `geohash` for parallel processing, replicates each partition across multiple brokers, and absorbs traffic spikes without data loss. It also decouples producers (sensors) from consumers (processors), so the alert pipeline and the cold storage pipeline can evolve and scale independently.
+Kafka ingests millions of real-time sensor events, partitions them by `device_id` (the message key) for parallel processing while keeping each device's readings ordered, replicates each partition across multiple brokers, and absorbs traffic spikes without data loss. It also decouples producers (sensors) from consumers (processors), so the alert pipeline and the cold storage pipeline can evolve and scale independently.
 
 **2. A stream processing engine - Spark Structured Streaming (Scala).**
-Spark Structured Streaming continuously consumes the Kafka topic, applies detection rules over sliding windows (e.g. *temperature > 50°C AND CO level > 100 ppm AND rising trend over 5 minutes → fire alert*), and emits anomalies into a dedicated Kafka topic (`alerts`). Same engine, same language (Scala), and same cluster as the batch jobs, which simplifies operations.
+Spark Structured Streaming continuously consumes the Kafka topic, applies detection rules over tumbling windows (a device is flagged when, within one window, *max temperature > 50°C AND max smoke > 50 AND max CO2 > 600 ppm AND min humidity < 30% → fire alert*), and emits anomalies into a dedicated Kafka topic (`alerts`). Same engine, same language (Scala), and same cluster as the batch jobs, which simplifies operations.
 
 **3. The Alert Service - Akka HTTP (Scala).**
 Subscribes to the `alerts` Kafka topic, enriches each alert with the recipient metadata (owner, contact for the zone) resolved from the TTL-cached contacts table described in 1.b, and dispatches notifications to emergency services via different methods. The device location is already present in the alert payload, so enrichment is a pure in-memory lookup with no synchronous database call on the critical path. Built on the Akka actor model for non-blocking, fault-tolerant handling of many concurrent connections.
