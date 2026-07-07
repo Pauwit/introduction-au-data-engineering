@@ -8,19 +8,24 @@ class GoldAnalyticsSpec extends AnyFlatSpec with Matchers with SparkSessionTestW
 
   import spark.implicits._
 
-  "anomaliesByWeekday" should "bucket an anomalous weekday row and an anomalous weekend row separately, excluding a calm row" in {
+  "co2AndHumidityByReadingType" should "average co2 and humidity separately for anomalous and normal readings" in {
     val silver = Seq(
-      (Timestamp.valueOf("2026-07-01 10:00:00"), "drone-001", 43.5, 5.2, 60.0, 20.0, 800.0, 60.0, "2026-07-01", 10),
-      (Timestamp.valueOf("2026-07-04 10:00:00"), "drone-002", 43.5, 5.2, 70.0, 20.0, 800.0, 70.0, "2026-07-04", 10),
-      (Timestamp.valueOf("2026-07-01 11:00:00"), "drone-003", 43.5, 5.2, 20.0, 40.0, 410.0, 1.0, "2026-07-01", 11)
+      (Timestamp.valueOf("2026-07-01 10:00:00"), "drone-001", 43.5, 5.2, 60.0, 15.0, 1000.0, 60.0, "2026-07-01", 10),
+      (Timestamp.valueOf("2026-07-01 11:00:00"), "drone-002", 43.5, 5.2, 20.0, 40.0, 400.0, 1.0, "2026-07-01", 11)
     ).toDF("timestamp", "device_id", "latitude", "longitude", "temperature", "humidity", "co2", "smoke", "date", "hour")
 
-    val gold = GoldAnalytics.anomaliesByWeekday(silver)
-    val rows = gold.collect().map(row => row.getAs[String]("day_type") -> row.getAs[Long]("anomaly_count")).toMap
+    val gold = GoldAnalytics.co2AndHumidityByReadingType(silver)
+    val rows = gold.collect().map(row => row.getAs[String]("reading_type") -> row).toMap
 
-    rows("weekday") shouldEqual 1L
-    rows("weekend") shouldEqual 1L
-    rows.values.sum shouldEqual 2L
+    rows("anomaly").getAs[Double]("avg_temperature") shouldEqual 60.0
+    rows("anomaly").getAs[Double]("avg_humidity") shouldEqual 15.0
+    rows("anomaly").getAs[Double]("avg_co2") shouldEqual 1000.0
+    rows("anomaly").getAs[Double]("avg_smoke") shouldEqual 60.0
+    rows("anomaly").getAs[Long]("reading_count") shouldEqual 1L
+    rows("normal").getAs[Double]("avg_temperature") shouldEqual 20.0
+    rows("normal").getAs[Double]("avg_humidity") shouldEqual 40.0
+    rows("normal").getAs[Double]("avg_co2") shouldEqual 400.0
+    rows("normal").getAs[Double]("avg_smoke") shouldEqual 1.0
   }
 
   "avgTemperatureByZone" should "average temperatures for rows sharing the same geohash" in {

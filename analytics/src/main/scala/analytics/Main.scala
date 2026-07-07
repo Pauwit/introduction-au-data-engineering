@@ -20,18 +20,18 @@ object Main {
 
     val silverForGold = spark.read.parquet(AnalyticsConfig.silverPath(env))
 
-    val anomaliesByWeekday = GoldAnalytics.anomaliesByWeekday(silverForGold)
+    val co2HumidityByReadingType = GoldAnalytics.co2AndHumidityByReadingType(silverForGold)
     val avgTemperatureByZone = GoldAnalytics.avgTemperatureByZone(silverForGold)
     val topDevicesByAnomalies = GoldAnalytics.topDevicesByAnomalies(silverForGold)
     val avgReadingsByHourOfDay = GoldAnalytics.avgReadingsByHourOfDay(silverForGold)
 
-    anomaliesByWeekday.write.mode("overwrite").parquet(s"${AnalyticsConfig.goldPath(env)}/anomalies_by_weekday")
+    co2HumidityByReadingType.write.mode("overwrite").parquet(s"${AnalyticsConfig.goldPath(env)}/co2_humidity_by_reading_type")
     avgTemperatureByZone.write.mode("overwrite").parquet(s"${AnalyticsConfig.goldPath(env)}/avg_temperature_by_zone")
     topDevicesByAnomalies.write.mode("overwrite").parquet(s"${AnalyticsConfig.goldPath(env)}/top_devices_by_anomalies")
     avgReadingsByHourOfDay.write.mode("overwrite").parquet(s"${AnalyticsConfig.goldPath(env)}/avg_readings_by_hour_of_day")
 
-    println("anomalies by weekday:")
-    anomaliesByWeekday.collect().foreach(row => println(s"  ${row.getAs[String]("day_type")}: ${row.getAs[Long]("anomaly_count")}"))
+    println("average readings by reading type:")
+    co2HumidityByReadingType.collect().foreach(row => println(s"  ${row.getAs[String]("reading_type")}: temp=${row.getAs[Double]("avg_temperature")} humidity=${row.getAs[Double]("avg_humidity")} co2=${row.getAs[Double]("avg_co2")} smoke=${row.getAs[Double]("avg_smoke")} (${row.getAs[Long]("reading_count")} readings)"))
 
     println("average temperature by zone:")
     avgTemperatureByZone.collect().foreach(row => println(s"  ${row.getAs[String]("geohash")}: ${row.getAs[Double]("avg_temperature")}"))
@@ -42,8 +42,8 @@ object Main {
     println("average temperature by hour of day:")
     avgReadingsByHourOfDay.collect().foreach(row => println(s"  ${row.getAs[Int]("hour")}h: ${row.getAs[Double]("avg_temperature")}"))
 
-    val anomaliesList = anomaliesByWeekday.collect().map { r =>
-      s"""{"day_type": "${r.getAs[String]("day_type")}", "anomaly_count": ${r.getAs[Long]("anomaly_count")}}"""
+    val readingTypeList = co2HumidityByReadingType.collect().map { r =>
+      s"""{"reading_type": "${r.getAs[String]("reading_type")}", "avg_temperature": ${math.round(r.getAs[Double]("avg_temperature") * 10.0) / 10.0}, "avg_humidity": ${math.round(r.getAs[Double]("avg_humidity") * 10.0) / 10.0}, "avg_co2": ${math.round(r.getAs[Double]("avg_co2") * 10.0) / 10.0}, "avg_smoke": ${math.round(r.getAs[Double]("avg_smoke") * 10.0) / 10.0}, "reading_count": ${r.getAs[Long]("reading_count")}}"""
     }.mkString("[", ", ", "]")
 
     val zoneList = avgTemperatureByZone.collect().map { r =>
@@ -60,7 +60,7 @@ object Main {
 
     val summaryJson =
       s"""{
-         |  "anomalies_by_weekday": $anomaliesList,
+         |  "co2_humidity_by_reading_type": $readingTypeList,
          |  "avg_temperature_by_zone": $zoneList,
          |  "top_devices_by_anomalies": $devicesList,
          |  "avg_readings_by_hour_of_day": $hourList

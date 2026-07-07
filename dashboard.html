@@ -329,8 +329,8 @@
                         <div id="gold-top-devices" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
                     </div>
                     <div style="background: #0f172a; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); border-left: 3px solid #10b981;">
-                        <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1rem;">Distribution Temporelle (Semaine vs Week-end)</h3>
-                        <div id="gold-weekdays" style="display: flex; gap: 1rem;"></div>
+                        <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1rem;">Moyennes Capteurs (Anomalie vs Normal)</h3>
+                        <div id="gold-signature" style="display: flex; gap: 1rem;"></div>
                     </div>
                     <div style="background: #0f172a; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); border-left: 3px solid #38bdf8;">
                         <h3 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1rem;">Moyenne Thermique par Secteur SDIS / ONF</h3>
@@ -455,7 +455,7 @@
         const noGold = document.getElementById("no-gold");
         const goldContent = document.getElementById("gold-content");
         const goldTopDevices = document.getElementById("gold-top-devices");
-        const goldWeekdays = document.getElementById("gold-weekdays");
+        const goldSignature = document.getElementById("gold-signature");
         const goldZones = document.getElementById("gold-zones");
         const goldHours = document.getElementById("gold-hours");
 
@@ -519,9 +519,9 @@
                 });
             }
 
-            goldWeekdays.innerHTML = "";
-            const weekdays = data.anomalies_by_weekday || [];
-            weekdays.forEach(item => {
+            goldSignature.innerHTML = "";
+            const signature = data.co2_humidity_by_reading_type || [];
+            signature.forEach(item => {
                 const badge = document.createElement("div");
                 badge.style.flex = "1";
                 badge.style.background = "#1e293b";
@@ -529,9 +529,11 @@
                 badge.style.borderRadius = "6px";
                 badge.style.border = "1px solid #334155";
                 badge.style.textAlign = "center";
-                const label = item.day_type === "weekend" ? "Période Week-end" : "Période En Semaine";
-                badge.innerHTML = `<div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600;">${label}</div><div style="font-size: 1.5rem; font-weight: 700; font-family: monospace; margin-top: 0.4rem; color: #f8fafc;">${item.anomaly_count}</div>`;
-                goldWeekdays.appendChild(badge);
+                const isAnomaly = item.reading_type === "anomaly";
+                const label = isAnomaly ? "Lectures Anomalie" : "Lectures Normales";
+                const labelColor = isAnomaly ? "#f87171" : "#34d399";
+                badge.innerHTML = `<div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: ${labelColor}; font-weight: 600; margin-bottom: 0.4rem;">${label}</div><div style="font-size: 1rem; font-weight: 700; font-family: monospace; color: #f97316;">Temp ${item.avg_temperature.toFixed(1)} °C</div><div style="font-size: 1rem; font-weight: 700; font-family: monospace; margin-top: 0.2rem; color: #38bdf8;">Humidité ${item.avg_humidity.toFixed(1)} %</div><div style="font-size: 1rem; font-weight: 700; font-family: monospace; margin-top: 0.2rem; color: #fbbf24;">CO₂ ${item.avg_co2.toFixed(0)} ppm</div><div style="font-size: 1rem; font-weight: 700; font-family: monospace; margin-top: 0.2rem; color: #cbd5e1;">Fumée ${item.avg_smoke.toFixed(1)}</div><div style="font-size: 0.7rem; color: #475569; margin-top: 0.3rem;">${item.reading_count} lectures</div>`;
+                goldSignature.appendChild(badge);
             });
 
             goldZones.innerHTML = "";
