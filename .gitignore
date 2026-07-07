@@ -4,6 +4,8 @@ project/project/
 project/target/
 *.class
 *.log
-data-lake/
+data-lake/bronze/
+data-lake/silver/
+data-lake/gold/
 .bsp
 checkpoints

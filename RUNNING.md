@@ -87,7 +87,8 @@ sbt run
 |---|---|
 | `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` |
 | `ALERTS_TOPIC` | `alerts` |
-| `CONTACTS_RESOURCE` | `contacts-seed.json` |
+| `DATA_LAKE_ROOT` | `../data-lake` |
+| `CONTACTS_RESOURCE` | `contacts/contacts-seed.json` (path within `DATA_LAKE_ROOT`) |
 | `CONTACTS_REFRESH_SECONDS` | `300` |
 | `GEOHASH_PRECISION` | `5` |
 | `HTTP_HOST` | `0.0.0.0` |

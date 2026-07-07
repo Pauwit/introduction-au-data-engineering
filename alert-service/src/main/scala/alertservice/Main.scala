@@ -39,7 +39,7 @@ object Main {
       .map(record => decode[Alert](record.value()))
       .collect { case Right(alert) => alert }
 
-    val contactsCache = system.actorOf(ContactsCacheActor.props(AlertServiceConfig.contactsResource(env)))
+    val contactsCache = system.actorOf(ContactsCacheActor.props(AlertServiceConfig.contactsPath(env)))
     val refreshInterval = AlertServiceConfig.contactsRefreshInterval(env)
 
     val _ = Source
