@@ -25,7 +25,7 @@ object Main {
     val alerts = AlertRules.detect(events, AlertDetectionConfig.windowDurationSeconds(env))
 
     val alertRecords = alerts.select(
-      to_json(struct(col("timestamp"), col("device_id"), col("latitude"), col("longitude"), col("co2"), col("humidity"), col("reason"))).as("value")
+      to_json(struct(col("timestamp"), col("device_id"), col("latitude"), col("longitude"), col("temperature"), col("smoke"), col("co2"), col("humidity"), col("reason"))).as("value")
     )
 
     val query = alertRecords.writeStream

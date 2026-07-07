@@ -13,6 +13,8 @@ object AlertEnricher {
       alert.deviceId,
       alert.latitude,
       alert.longitude,
+      alert.temperature,
+      alert.smoke,
       alert.co2,
       alert.humidity,
       alert.reason,

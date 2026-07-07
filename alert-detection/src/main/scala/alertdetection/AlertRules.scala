@@ -36,6 +36,8 @@ object AlertRules {
         col("device_id"),
         col("latitude"),
         col("longitude"),
+        col("max_temperature").as("temperature"),
+        col("max_smoke").as("smoke"),
         col("max_co2").as("co2"),
         col("min_humidity").as("humidity"),
         lit("high temperature, smoke and co2 with low humidity").as("reason")

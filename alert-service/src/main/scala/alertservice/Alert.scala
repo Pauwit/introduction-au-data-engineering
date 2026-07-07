@@ -9,13 +9,15 @@ final case class Alert(
   deviceId: String,
   latitude: Double,
   longitude: Double,
+  temperature: Double,
+  smoke: Double,
   co2: Double,
   humidity: Double,
   reason: String
 )
 
 object Alert {
-  implicit val decoder: Decoder[Alert] = Decoder.forProduct7(
-    "timestamp", "device_id", "latitude", "longitude", "co2", "humidity", "reason"
+  implicit val decoder: Decoder[Alert] = Decoder.forProduct9(
+    "timestamp", "device_id", "latitude", "longitude", "temperature", "smoke", "co2", "humidity", "reason"
   )(Alert.apply)
 }
