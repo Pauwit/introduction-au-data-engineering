@@ -13,6 +13,8 @@ import akka.stream.scaladsl.{BroadcastHub, Flow, Keep, Sink, Source}
 import akka.util.Timeout
 import io.circe.parser.decode
 import io.circe.syntax._
+import akka.http.scaladsl.model.headers.{`Access-Control-Allow-Methods`, `Access-Control-Allow-Origin`}
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethods, StatusCodes}
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 
@@ -61,6 +63,11 @@ object Main {
 
     val _ = enrichedAlerts.runForeach(alert => dispatchers.foreach(_.dispatch(alert)))
 
+    val corsHeaders = List(
+      `Access-Control-Allow-Origin`.*,
+      `Access-Control-Allow-Methods`(HttpMethods.GET, HttpMethods.OPTIONS)
+    )
+
     val alertsRoute = path("alerts") {
       handleWebSocketMessages(Flow.fromSinkAndSource(Sink.ignore, broadcastSource.map(alert => TextMessage(alert.asJson.noSpaces))))
     }
@@ -71,6 +78,41 @@ object Main {
       }
     }
 
-    val _ = Http().newServerAt(AlertServiceConfig.httpHost(env), AlertServiceConfig.httpPort(env)).bind(alertsRoute ~ healthRoute)
+    val goldRoute = path("gold") {
+      respondWithHeaders(corsHeaders) {
+        get {
+          val candidatePaths = List(
+            s"${env.getOrElse("DATA_LAKE_ROOT", "data-lake")}/gold/gold-summary.json",
+            "../analytics/data-lake/gold/gold-summary.json",
+            "../lake-ingestion/data-lake/gold/gold-summary.json",
+            "../data-lake/gold/gold-summary.json",
+            "data-lake/gold/gold-summary.json"
+          ).map(java.nio.file.Paths.get(_))
+
+          val existingPathOpt = candidatePaths.find(java.nio.file.Files.exists(_))
+          existingPathOpt match {
+            case Some(summaryPath) =>
+              val content = new String(java.nio.file.Files.readAllBytes(summaryPath), "UTF-8")
+              complete(HttpEntity(ContentTypes.`application/json`, content))
+            case None =>
+              complete(StatusCodes.NotFound -> "{}")
+          }
+        }
+      }
+    }
+
+    val dashboardRoute = pathEndOrSingleSlash {
+      get {
+        getFromFile("dashboard.html")
+      }
+    } ~ path("dashboard.html") {
+      get {
+        getFromFile("dashboard.html")
+      }
+    }
+
+    val routes = alertsRoute ~ healthRoute ~ goldRoute ~ dashboardRoute
+
+    val _ = Http().newServerAt(AlertServiceConfig.httpHost(env), AlertServiceConfig.httpPort(env)).bind(routes)
   }
 }

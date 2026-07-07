@@ -1,5 +1,15 @@
 [
   {"geohash": "u4pru", "owner": "Office National des Forets - Vosges", "contact": "+33 3 88 00 11 22"},
   {"geohash": "sp3e3", "owner": "SDIS 13 - Massif des Calanques", "contact": "+33 4 91 00 22 33"},
-  {"geohash": "gbsuv", "owner": "Forestry Commission - Highlands", "contact": "+44 1463 700100"}
+  {"geohash": "gbsuv", "owner": "Forestry Commission - Highlands", "contact": "+44 1463 700100"},
+  {"geohash": "spexq", "owner": "SDIS 13 - Secteur Aix-en-Provence", "contact": "+33 4 42 00 11 22"},
+  {"geohash": "spevg", "owner": "SDIS 13 - Massif des Calanques Sud", "contact": "+33 4 91 00 33 44"},
+  {"geohash": "spsqp", "owner": "SDIS 83 - Massif des Maures", "contact": "+33 4 94 00 11 22"},
+  {"geohash": "spsz7", "owner": "SDIS 83 - Massif de l'Esterel", "contact": "+33 4 94 00 33 44"},
+  {"geohash": "spezw", "owner": "SDIS 13 - Massif de la Sainte-Victoire", "contact": "+33 4 42 00 55 66"},
+  {"geohash": "spu90", "owner": "SDIS 04 - Parc Naturel Regional du Verdon", "contact": "+33 4 92 00 77 88"},
+  {"geohash": "spv4g", "owner": "SDIS 06 - Parc National du Mercantour", "contact": "+33 4 93 00 99 00"},
+  {"geohash": "spgc3", "owner": "SDIS 84 - Parc Naturel Regional du Luberon", "contact": "+33 4 90 00 12 34"},
+  {"geohash": "ezzmn", "owner": "SDIS 33 - Foret des Landes de Gascogne", "contact": "+33 5 56 00 44 55"},
+  {"geohash": "u0t18", "owner": "Office National des Forets - Massif des Vosges", "contact": "+33 3 88 00 33 44"}
 ]

@@ -26,4 +26,7 @@ object ContactsRepository {
 
   def lookup(contacts: Map[String, Contact], geohash: String): Option[Contact] =
     contacts.collectFirst { case (key, contact) if key == geohash => contact }
+      .orElse(contacts.collectFirst { case (key, contact) if geohash.take(4) == key.take(4) => contact })
+      .orElse(contacts.collectFirst { case (key, contact) if geohash.take(3) == key.take(3) => contact })
+      .orElse(contacts.collectFirst { case (key, contact) if geohash.take(2) == key.take(2) => contact })
 }
