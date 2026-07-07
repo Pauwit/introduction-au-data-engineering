@@ -29,8 +29,8 @@ class AlertDetectionConfigSpec extends AnyFlatSpec with Matchers {
     AlertDetectionConfig.sparkMaster(Map.empty) shouldEqual "local[*]"
   }
 
-  "windowDurationSeconds" should "default to 60" in {
-    AlertDetectionConfig.windowDurationSeconds(Map.empty) shouldEqual 60
+  "windowDurationSeconds" should "default to 30" in {
+    AlertDetectionConfig.windowDurationSeconds(Map.empty) shouldEqual 30
   }
 
   it should "use the env value when present" in {

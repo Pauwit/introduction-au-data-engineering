@@ -70,7 +70,7 @@ sbt run
 | `ALERTS_TOPIC` | `alerts` |
 | `CHECKPOINT_LOCATION` | `checkpoints/alert-detection` |
 | `SPARK_MASTER` | `local[*]` |
-| `WINDOW_DURATION_SECONDS` | `60` |
+| `WINDOW_DURATION_SECONDS` | `30` |
 
 The watermark matches the window duration. Because of that, expect roughly two window durations of data flowing through `DRONE_EVENTS_TOPIC` before the first alerts appear on the `ALERTS_TOPIC`; lowering `WINDOW_DURATION_SECONDS` shortens that wait.
 
@@ -104,7 +104,7 @@ Consumes `DRONE_EVENTS_TOPIC`, writes raw JSON to the bronze layer of a local da
 
 ```bash
 cd lake-ingestion
-DATA_LAKE_ROOT=/absolute/path/to/data-lake sbt run
+sbt run
 ```
 
 | Env var | Default |
@@ -123,7 +123,7 @@ One-shot Spark batch job: reads the bronze layer, writes a cleaned/deduped silve
 
 ```bash
 cd analytics
-DATA_LAKE_ROOT=/absolute/path/to/data-lake sbt run
+sbt run
 ```
 
 | Env var | Default |
