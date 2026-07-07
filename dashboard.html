@@ -424,6 +424,8 @@
                 </div>
                 <div class="alert-meta" style="border-top: 1px solid #1e293b; padding-top: 0.75rem; margin-top: 0.75rem; display: grid; grid-template-columns: 1fr; gap: 0.4rem; font-size: 0.85rem;">
                     <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">Coordonnées :</span> <strong style="font-family: monospace; color: #cbd5e1;">${alert.latitude.toFixed(5)}, ${alert.longitude.toFixed(5)}</strong></div>
+                    <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">CO₂ :</span> <strong style="font-family: monospace; color: #fbbf24;">${alert.co2.toFixed(0)} ppm</strong></div>
+                    <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">Humidité :</span> <strong style="font-family: monospace; color: #38bdf8;">${alert.humidity.toFixed(1)} %</strong></div>
                     <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">Secteur SDIS :</span> <strong style="color: #e2e8f0;">${alert.owner}</strong></div>
                     <div class="meta-group"><span style="color: #64748b; display: inline-block; width: 120px;">Contact Urgence :</span> <strong style="font-family: monospace; color: #38bdf8;">${alert.contact}</strong></div>
                 </div>

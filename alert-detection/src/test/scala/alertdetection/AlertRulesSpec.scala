@@ -17,7 +17,9 @@ class AlertRulesSpec extends AnyFlatSpec with Matchers with SparkSessionTestWrap
 
     alerts should have length 1
     alerts.head.getAs[String]("device_id") shouldEqual "drone-001"
-    alerts.head.getAs[String]("reason") shouldEqual "high temperature and smoke"
+    alerts.head.getAs[String]("reason") shouldEqual "high temperature, smoke and co2 with low humidity"
+    alerts.head.getAs[Double]("co2") shouldEqual 950.0
+    alerts.head.getAs[Double]("humidity") shouldEqual 15.0
   }
 
   it should "not raise an alert for a device with calm readings" in {

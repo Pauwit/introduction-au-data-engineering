@@ -26,7 +26,7 @@ class WebSocketNotificationDispatcherSpec extends AnyFlatSpec with Matchers with
       .run()
 
     val dispatcher = new WebSocketNotificationDispatcher(queue)
-    val alert = EnrichedAlert(Instant.parse("2026-07-03T10:15:00Z"), "drone-001", 43.5, 5.2, "high temperature and smoke", "owner", "contact")
+    val alert = EnrichedAlert(Instant.parse("2026-07-03T10:15:00Z"), "drone-001", 43.5, 5.2, 950.0, 15.0, "high temperature and smoke", "owner", "contact")
 
     dispatcher.dispatch(alert)
 
@@ -44,7 +44,7 @@ class WebSocketNotificationDispatcherSpec extends AnyFlatSpec with Matchers with
     val probe2 = broadcastSource.runWith(TestSink.probe[EnrichedAlert])
 
     val dispatcher = new WebSocketNotificationDispatcher(queue)
-    val alert = EnrichedAlert(Instant.parse("2026-07-03T10:15:00Z"), "drone-002", 44.0, 6.0, "high temperature and smoke", "owner", "contact")
+    val alert = EnrichedAlert(Instant.parse("2026-07-03T10:15:00Z"), "drone-002", 44.0, 6.0, 950.0, 15.0, "high temperature and smoke", "owner", "contact")
 
     probe1.request(1)
     probe2.request(1)

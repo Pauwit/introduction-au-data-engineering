@@ -13,6 +13,8 @@ object AlertEnricher {
       alert.deviceId,
       alert.latitude,
       alert.longitude,
+      alert.co2,
+      alert.humidity,
       alert.reason,
       contact.map(_.owner).getOrElse(unknown),
       contact.map(_.contact).getOrElse(unknown)
