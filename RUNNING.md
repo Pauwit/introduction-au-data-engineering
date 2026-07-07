@@ -76,7 +76,7 @@ The watermark matches the window duration. Because of that, expect roughly two w
 
 ### Component 3: `alert-service`
 
-Consumes `ALERTS_TOPIC`, enriches with owner/contact from the seeded contacts table, dispatches to console and to a WebSocket at `/alerts`; exposes `/health`.
+Consumes `ALERTS_TOPIC`, enriches each alert with owner/contact from the contacts table in the data lake (`$DATA_LAKE_ROOT/contacts/contacts-seed.json`, reloaded every `CONTACTS_REFRESH_SECONDS` without a restart), and dispatches to console and to a WebSocket at `/alerts`. It also exposes `/health`, serves the `dashboard.html` monitoring page at `/`, and a read-only `/gold` endpoint that returns the batch `gold-summary.json` for the dashboard.
 
 ```bash
 cd alert-service
@@ -94,7 +94,9 @@ sbt run
 | `HTTP_HOST` | `0.0.0.0` |
 | `HTTP_PORT` | `8080` |
 
-Check it's up with `curl http://localhost:8080/health` (expects `ok`).
+Check it's up with `curl http://localhost:8080/health` (expects `ok`), and open `http://localhost:8080/` for the live dashboard.
+
+For owner/contact enrichment and the dashboard's gold panel to work, point `DATA_LAKE_ROOT` at the same lake as `lake-ingestion`/`analytics`. The default `../data-lake` already does this when each component is run from its own directory.
 
 ### Component 4: `lake-ingestion`
 
@@ -113,7 +115,7 @@ DATA_LAKE_ROOT=/absolute/path/to/data-lake sbt run
 | `BATCH_SIZE` | `50` |
 | `BATCH_INTERVAL_SECONDS` | `5` |
 
-`DATA_LAKE_ROOT` must be the same absolute path used for `analytics` below, since one writes the data lake and the other reads it.
+`DATA_LAKE_ROOT` must point at the same lake as `analytics` (and `alert-service`), since one writes it and the others read it. The default `../data-lake` already resolves to the repo-root lake for all of them when each component is run from its own directory; override it with a shared absolute path for other layouts.
 
 ### Component 5: `analytics`
 
@@ -137,4 +139,5 @@ This exits on its own once done (it is not a long-running service).
 2. Start `iot-simulator`.
 3. Start `lake-ingestion`, `alert-detection`, `alert-service` (any order, each in its own terminal).
 4. Let it run for a couple of minutes so alerts and bronze data accumulate.
-5. Run `analytics` once to see the gold results.
+5. Open `http://localhost:8080/` to watch the live alert dashboard.
+6. Run `analytics` once to see the gold results (the dashboard's gold panel refreshes from `/gold`).
