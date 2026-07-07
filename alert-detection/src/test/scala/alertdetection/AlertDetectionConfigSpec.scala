@@ -37,7 +37,7 @@ class AlertDetectionConfigSpec extends AnyFlatSpec with Matchers {
     AlertDetectionConfig.windowDurationSeconds(Map("WINDOW_DURATION_SECONDS" -> "30")) shouldEqual 30
   }
 
-  it should "fall back to the default on an invalid value" in {
-    AlertDetectionConfig.windowDurationSeconds(Map("WINDOW_DURATION_SECONDS" -> "not-a-number")) shouldEqual 60
+  it should "fall back to the default on a non-positive value" in {
+    AlertDetectionConfig.windowDurationSeconds(Map("WINDOW_DURATION_SECONDS" -> "-10")) shouldEqual 60
   }
 }
